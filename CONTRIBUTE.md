@@ -19,4 +19,8 @@ We have decided to go with the Integration Manager workflow, where all of us act
 3. COMMITS: Then a commit message for that branch would be "Issue 1: This is why the cat shouldn't sit on my keyboard."
 
 ## Who is responsible for integrating/reviewing contributions?
-Then we push our feature/bug to the remote and create a pull request with a short but elaborate description of the content of the PR. One/two team members are added as reviewers, they have to leave comments and when they are ready they approve. When a PR has been approved anyone can merge it into the development branch. 
+RELEASES
+??
+
+FEATURE BRANCHES
+Then we push our feature/bug to the remote and create a pull request with a short but elaborate description of the content of the PR. One/two team members are added as reviewers, they have to leave comments and when they are ready they approve. When a PR has been approved anyone can merge it into the development branch. When a feature PR is approved and the branch is merged, the branch is deleted.
