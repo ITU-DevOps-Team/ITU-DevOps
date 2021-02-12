@@ -1,84 +1,80 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
-	"html/template"
 	"database/sql"
-	//"github.com/mattn/go-sqlite3"
+	"fmt"
 	"log"
-	//"os"
-	//"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var DATABASE = "/tmp/minitwit.db"
-var PER_PAGE = 30
-var DEBUG = true
-var SECRET_KEY = "development key"
+const DRIVER = "sqlite3"
+const DATABASE = "/tmp/minitwit.db"
+const PER_PAGE = 30
+const DEBUG = true
+const SECRET_KEY = "development key"
 
-var (
-	db *sql.DB
-	user *string
-)
+type User struct {
+	User_id  int64
+	Username string
+	Email    string
+	Pw_hash  string
+}
 
-func connect_db() (*sql.DB){
-	db_, err := sql.Open("sqlite3", DATABASE)
+func GetUserByIdHandler(db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT * FROM user LIMIT 5")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+
+		r.Context()
+		fmt.Println(rows.Columns())
+	})
+}
+
+func TestHandler(db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT * FROM user LIMIT 5")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+
+		fmt.Println(rows.Columns())
+	})
+}
+
+func HomeHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Welcome to itu-minitwit"))
+	})
+}
+
+func initDb(driver string, datasource string) (*sql.DB, error) {
+	db, err := sql.Open(driver, datasource)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return db_
+
+	return db, db.Ping()
 }
-
-func followUser(w http.ResponseWriter, r *http.Request) {
-	//vars := mux.Vars(r)
-	//username := vars["username"]
-	user := "jonas"
-	
-	if len(user) <= 0 {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-
-	whom_id := 1
-
-	if whom_id <= 0 {
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
-
-func before_req(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		db = connect_db()
-		user = nil
-		defer db.Close()
-		handler(w, r)
-	}
-}
-
-type Student struct {
-	Name string
-}
-
-func public_timeline(w http.ResponseWriter, r *http.Request) {
-	student := Student{
-		Name: "Jo",
-	}
-	parsedTemp, _ := template.ParseFiles("test.html")
-	err := parsedTemp.Execute(w, student)
-	if err != nil {
-		log.Println("Error executing template: ", err)
-		return
-	}
-}
-
 
 func main() {
-
+	db, err := initDb(DRIVER, DATABASE)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
 	r := mux.NewRouter()
+	// r.Use(dbConnMiddleware)
+	r.Handle("/", HomeHandler()).Methods("GET")
+	r.Handle("/", TestHandler(db)).Methods("GET")
+	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
 
-	r.HandleFunc("/{username}/follow", before_req(followUser)).Methods("GET")
-	r.HandleFunc("/", public_timeline).Methods("GET")
-
-	http.ListenAndServe(":8080", r) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	http.ListenAndServe(":8080", r)
 }
