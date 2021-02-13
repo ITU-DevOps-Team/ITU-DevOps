@@ -104,10 +104,18 @@ func main() {
 	defer db.Close()
 
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
-	r := mux.NewRouter()
 
+	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store))
-	r.Handle("/", HomeHandler()).Methods("GET")
+	r.Handle("/", TestHandler(db)).Methods("GET")
+	r.Handle("/public", TestHandler(db)).Methods("GET")
+	r.Handle("/login", TestHandler(db)).Methods("GET")
+	r.Handle("/register", TestHandler(db)).Methods("GET", "POST")
+	r.Handle("/logout", TestHandler(db)).Methods("GET", "POST")
+	r.Handle("/add_message", TestHandler(db)).Methods("POST")
+	r.Handle("{username}/", TestHandler(db)).Methods("GET")
+	r.Handle("{username}/follow", TestHandler(db)).Methods("GET")
+	r.Handle("{username}/unfollow", TestHandler(db)).Methods("GET")
 	r.Handle("/test", TestHandler(db)).Methods("GET")
 	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
 
