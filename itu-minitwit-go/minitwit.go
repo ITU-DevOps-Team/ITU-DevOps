@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -73,6 +74,19 @@ func HomeHandler() http.Handler {
 	})
 }
 
+func BeforeRequestMiddleware(store *sessions.CookieStore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		mdfn := func(w http.ResponseWriter, r *http.Request) {
+			// TODO: middleware logic here
+			// check for user session in store
+
+			next.ServeHTTP(w, r)
+		}
+
+		return http.HandlerFunc(mdfn)
+	}
+}
+
 func initDb(driver string, datasource string) (*sql.DB, error) {
 	db, err := sql.Open(driver, datasource)
 	if err != nil {
@@ -89,7 +103,10 @@ func main() {
 	}
 	defer db.Close()
 
+	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 	r := mux.NewRouter()
+
+	r.Use(BeforeRequestMiddleware(store))
 	r.Handle("/", HomeHandler()).Methods("GET")
 	r.Handle("/test", TestHandler(db)).Methods("GET")
 	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
