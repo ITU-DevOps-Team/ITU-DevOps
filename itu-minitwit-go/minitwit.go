@@ -60,7 +60,7 @@ func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 			user, err := GetUserById(id, db)
 			if err != nil {
 				errorMsg = "Invalid username"
-			} else if err = bcrypt.CompateHashAndPassword(user.Pw_hash, r.Form.Get("password")); err != nil {
+			} else if err = bcrypt.CompareHashAndPassword([]byte(user.Pw_hash), []byte(r.Form.Get("password"))); err != nil {
 				errorMsg = "Invalid password"
 			} else {
 				session.AddFlash("You were logged in")
