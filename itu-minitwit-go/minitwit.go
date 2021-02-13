@@ -45,6 +45,41 @@ func GetUserById(id int, db *sql.DB) (User, error) {
 	return user, err
 }
 
+func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+
+		userId := session.Values["user_id"]
+		if isLoggedIn := userId != nil; isLoggedIn {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+
+		var errorMsg string
+		if r.Method == "POST" {
+			id := userId.(int)
+			user, err := GetUserById(id, db)
+			if err != nil {
+				errorMsg = "Invalid username"
+			} else if err = bcrypt.CompateHashAndPassword(user.Pw_hash, r.Form.Get("password")); err != nil {
+				errorMsg = "Invalid password"
+			} else {
+				session.AddFlash("You were logged in")
+				session.Values["user_id"] = user.User_id
+				err = session.Save(r, w)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			}
+		}
+
+		response := map[string]string{"error": errorMsg}
+		log.Println(response)
+		// TODO render login template with error
+	})
+}
+
 func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
@@ -192,7 +227,7 @@ func main() {
 	r.Use(BeforeRequestMiddleware(store, db))
 	r.Handle("/", HomeHandler()).Methods("GET")
 	r.Handle("/public", TestHandler(db)).Methods("GET")
-	r.Handle("/login", TestHandler(db)).Methods("GET", "POST")
+	r.Handle("/login", LoginHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/logout", TestHandler(db)).Methods("GET")
 	r.Handle("/add_message", TestHandler(db)).Methods("POST")
