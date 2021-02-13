@@ -51,7 +51,7 @@ func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 
 		userId := session.Values["user_id"]
 		if isLoggedIn := userId != nil; isLoggedIn {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
 		var errorMsg string
@@ -70,7 +70,7 @@ func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				http.Redirect(w, r, "/", http.StatusSeeOther)
+				http.Redirect(w, r, "/", http.StatusFound)
 			}
 		}
 
@@ -92,7 +92,7 @@ func LogoutHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 			return
 		}
 
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusFound)
 	})
 }
 
@@ -101,7 +101,7 @@ func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 		session, _ := store.Get(r, "session_cookie")
 		isLoggedIn := session.Values["user_id"] != nil
 		if isLoggedIn {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
 		var errorMsg string
