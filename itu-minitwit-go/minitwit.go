@@ -47,11 +47,7 @@ func GetUserById(id int, db *sql.DB) (User, error) {
 
 func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := store.Get(r, "session_cookie")
-		if err != nil {
-			log.Println(err)
-		}
-
+		session, _ := store.Get(r, "session_cookie")
 		isLoggedIn := session.Values["user_id"] != nil
 		if isLoggedIn {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -149,11 +145,7 @@ func HomeHandler() http.Handler {
 func BeforeRequestMiddleware(store *sessions.CookieStore, db *sql.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
-			session, err := store.Get(r, "session_cookie")
-			if err != nil {
-				log.Println(err)
-			}
-
+			session, _ := store.Get(r, "session_cookie")
 			userId := session.Values["user_id"]
 			if userId != nil {
 				id := userId.(int)
@@ -166,7 +158,8 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *sql.DB) func(http.
 				session.Values["username"] = user.Username
 				err = session.Save(r, w)
 				if err != nil {
-					log.Println(err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			}
 
