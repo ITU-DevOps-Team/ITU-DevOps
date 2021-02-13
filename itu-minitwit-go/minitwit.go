@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
+	"strconv"
+	"text/template"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -17,7 +20,7 @@ const DEBUG = true
 const SECRET_KEY = "development key"
 
 type User struct {
-	User_id  int64
+	User_id  int
 	Username string
 	Email    string
 	Pw_hash  string
@@ -25,14 +28,24 @@ type User struct {
 
 func GetUserByIdHandler(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT * FROM user LIMIT 5")
+		params := mux.Vars(r)
+		id, err := strconv.Atoi(params["id"])
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		user := User{}
+		db.QueryRow(fmt.Sprintf("SELECT * FROM user WHERE user_id=%d", id), 1).
+			Scan(&user.User_id, &user.Username, &user.Email, &user.Pw_hash)
+
+		file := path.Join(".", "templates", "greet.html")
+		tmpl, err := template.ParseFiles(file)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer rows.Close()
 
-		r.Context()
-		fmt.Println(rows.Columns())
+		tmpl.Execute(w, user)
 	})
 }
 
@@ -44,7 +57,13 @@ func TestHandler(db *sql.DB) http.Handler {
 		}
 		defer rows.Close()
 
-		fmt.Println(rows.Columns())
+		for rows.Next() {
+			var user_id, username, email, pw_hash string
+			if err := rows.Scan(&user_id, &username, &email, &pw_hash); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(user_id, username, email, pw_hash)
+		}
 	})
 }
 
@@ -71,9 +90,8 @@ func main() {
 	defer db.Close()
 
 	r := mux.NewRouter()
-	// r.Use(dbConnMiddleware)
 	r.Handle("/", HomeHandler()).Methods("GET")
-	r.Handle("/", TestHandler(db)).Methods("GET")
+	r.Handle("/test", TestHandler(db)).Methods("GET")
 	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
 
 	http.ListenAndServe(":8080", r)
