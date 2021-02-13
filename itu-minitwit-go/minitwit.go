@@ -80,6 +80,22 @@ func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 	})
 }
 
+func LogoutHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+		session.Values["user_id"] = nil
+		session.AddFlash("You were logged out")
+
+		err := session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+}
+
 func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
@@ -229,7 +245,7 @@ func main() {
 	r.Handle("/public", TestHandler(db)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, db)).Methods("GET", "POST")
-	r.Handle("/logout", TestHandler(db)).Methods("GET")
+	r.Handle("/logout", LogoutHandler(store, db)).Methods("GET")
 	r.Handle("/add_message", TestHandler(db)).Methods("POST")
 	r.Handle("{username}/", TestHandler(db)).Methods("GET")
 	r.Handle("{username}/follow", TestHandler(db)).Methods("GET")
