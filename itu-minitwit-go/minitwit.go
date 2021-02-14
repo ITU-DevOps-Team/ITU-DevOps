@@ -206,7 +206,6 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *sql.DB) func(http.
 				}
 
 				session.Values["user_id"] = user.User_id
-				session.Values["username"] = user.Username
 				err = session.Save(r, w)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
