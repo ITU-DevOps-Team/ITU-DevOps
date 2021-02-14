@@ -31,7 +31,7 @@ type User struct {
 
 func GetUserByUsername(username string, db *sql.DB) (User, error) {
 	user := User{}
-	err := db.QueryRow(fmt.Sprintf("SELECT * FROM user WHERE username=%s", username), 1).
+	err := db.QueryRow("SELECT * FROM user WHERE username= ?", username, 1).
 		Scan(&user.User_id, &user.Username, &user.Email, &user.Pw_hash)
 
 	return user, err
@@ -39,7 +39,7 @@ func GetUserByUsername(username string, db *sql.DB) (User, error) {
 
 func GetUserById(id int, db *sql.DB) (User, error) {
 	user := User{}
-	err := db.QueryRow(fmt.Sprintf("SELECT * FROM user WHERE user_id=%d", id), 1).
+	err := db.QueryRow("SELECT * FROM user WHERE user_id=%d", id, 1).
 		Scan(&user.User_id, &user.Username, &user.Email, &user.Pw_hash)
 
 	return user, err
@@ -56,11 +56,10 @@ func LoginHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 
 		var errorMsg string
 		if r.Method == "POST" {
-			id := userId.(int)
-			user, err := GetUserById(id, db)
+			user, err := GetUserByUsername(r.FormValue("username"), db)
 			if err != nil {
 				errorMsg = "Invalid username"
-			} else if err = bcrypt.CompareHashAndPassword([]byte(user.Pw_hash), []byte(r.Form.Get("password"))); err != nil {
+			} else if err = bcrypt.CompareHashAndPassword([]byte(user.Pw_hash), []byte(r.FormValue("password"))); err != nil {
 				errorMsg = "Invalid password"
 			} else {
 				session.AddFlash("You were logged in")
@@ -106,15 +105,15 @@ func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 
 		var errorMsg string
 		if r.Method == "POST" {
-			if len(r.Form.Get("username")) == 0 {
+			if len(r.FormValue("username")) == 0 {
 				errorMsg = "You have to enter a username"
-			} else if len(r.Form.Get("email")) == 0 || !strings.Contains(r.Form.Get("email"), "@") {
+			} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
 				errorMsg = "You have to enter a valid email address"
-			} else if len(r.Form.Get("password")) == 0 {
+			} else if len(r.FormValue("password")) == 0 {
 				errorMsg = "You have to enter a password"
-			} else if r.Form.Get("password") != r.Form.Get("password2") {
+			} else if r.FormValue("password") != r.FormValue("password2") {
 				errorMsg = "The passwords do not match"
-			} else if user, _ := GetUserByUsername(r.Form.Get("username"), db); user.Username == r.Form.Get("username") {
+			} else if user, _ := GetUserByUsername(r.FormValue("username"), db); user.Username == r.FormValue("username") {
 				errorMsg = "This username is already taken"
 			} else {
 				statement, err := db.Prepare("INSERT INTO user (username, email, pw_hash) values (?,?,?)")
@@ -124,14 +123,14 @@ func RegisterHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
 				}
 				defer statement.Close()
 
-				pass := r.Form.Get("password")
+				pass := r.FormValue("password")
 				hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
 				if err != nil {
 					log.Println(err)
 					return
 				}
 
-				statement.Exec(r.Form.Get("username"), r.Form.Get("email"), hash)
+				statement.Exec(r.FormValue("username"), r.FormValue("email"), hash)
 				// TODO return successful registration status
 			}
 		}
@@ -170,19 +169,18 @@ func GetUserByIdHandler(db *sql.DB) http.Handler {
 
 func TestHandler(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT * FROM user LIMIT 5")
+		rows, err := db.Query("SELECT COUNT(*) FROM user")
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer rows.Close()
 
 		for rows.Next() {
-			var user_id int
-			var username, email, pw_hash string
-			if err := rows.Scan(&user_id, &username, &email, &pw_hash); err != nil {
+			var count int
+			if err := rows.Scan(&count); err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(user_id, username, email, pw_hash)
+			fmt.Println(count)
 		}
 	})
 }
