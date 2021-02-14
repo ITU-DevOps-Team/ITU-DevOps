@@ -1,4 +1,13 @@
 This is the file containing our decision and argumentations on those during our minitwit project
 
 ## REWRITING MINITWIT IN GO
-Go is really fast and scalable. It is a lightweight language. Many ways to use Google API's are often written in GO by some Google dev, it would be nice to be able to follow those implementations in the future. There is a hype around Go, and we want to see what the hype is about.
+
+The decision to go with Go (pun intended :)) was based on the following reasons:
+
+- minimalistic language with an extensive standard library
+- fast, lightweight and scalable
+- strongly and statically typed (an advantage over python)
+- concurrency is an integral part supported by goroutines and channels
+- programs are constructed from packages that offer clear code separation
+- google APIs are often written in Go, it would be nice to follow those implementations
+- check the hype out???
