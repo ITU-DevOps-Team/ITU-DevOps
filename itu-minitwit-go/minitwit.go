@@ -295,7 +295,7 @@ func main() {
 	r.Handle("/login", LoginHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/logout", LogoutHandler(store, db)).Methods("GET")
-  r.Handle("/add_message", TestHandler(db)).Methods("POST")
+	r.Handle("/add_message", TestHandler(db)).Methods("POST")
 	r.Handle("/{username}", TestHandler(db)).Methods("GET")
 	r.Handle("/{username}/follow", TestHandler(db)).Methods("GET")
 	r.Handle("/{username}/unfollow", TestHandler(db)).Methods("GET")
