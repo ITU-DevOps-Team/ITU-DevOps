@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -17,7 +18,7 @@ import (
 )
 
 const DRIVER = "sqlite3"
-const DATABASE = "/tmp/minitwit.db"
+const DATABASE = "../db_backup/minitwit.db"
 const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
@@ -27,6 +28,14 @@ type User struct {
 	Username string
 	Email    string
 	Pw_hash  string
+}
+
+type Message struct {
+	Message_id int
+	Author_id  int
+	Text       string
+	Pub_date   string
+	Flagged    int
 }
 
 func GetUserByUsername(username string, db *sql.DB) (User, error) {
@@ -191,6 +200,49 @@ func HomeHandler() http.Handler {
 	})
 }
 
+func AddMessageHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		if userId == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		textValue := r.FormValue("text")
+		if textValue != "" {
+			result, error := db.Exec("INSERT INTO message (author_id, text, pub_date, flagged) VALUES (?, ?, ?, 0)", userId.(int), textValue, time.Now().Unix())
+			log.Println(result)
+			if error != nil {
+				log.Fatal(error)
+			}
+			session.AddFlash("Your message was recorded")
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+	})
+}
+
+func GetMessageByString(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// session, _ := store.Get(r, "session_cookie")
+		// userId := session.Values["user_id"]
+
+		messageQuery := r.FormValue("text")
+		if messageQuery != "" {
+			message := Message{}
+			rows := db.QueryRow("SELECT * FROM message WHERE message.text = ?", messageQuery, 1).
+				Scan(&message.Message_id, &message.Author_id, &message.Text, &message.Pub_date, &message.Flagged)
+			log.Println(rows)
+			log.Println(message)
+			// if err != nil {
+			// 	log.Fatal(err)
+			// }
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+	})
+}
+
 func BeforeRequestMiddleware(store *sessions.CookieStore, db *sql.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
@@ -243,12 +295,13 @@ func main() {
 	r.Handle("/login", LoginHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, db)).Methods("GET", "POST")
 	r.Handle("/logout", LogoutHandler(store, db)).Methods("GET")
-	r.Handle("/add_message", TestHandler(db)).Methods("POST")
+	r.Handle("/add_message", AddMessageHandler(store, db)).Methods("POST")
 	r.Handle("{username}/", TestHandler(db)).Methods("GET")
 	r.Handle("{username}/follow", TestHandler(db)).Methods("GET")
 	r.Handle("{username}/unfollow", TestHandler(db)).Methods("GET")
 	r.Handle("/test", TestHandler(db)).Methods("GET")
 	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
+	r.Handle("/get_message", GetMessageByString(store, db)).Methods("GET")
 
 	http.ListenAndServe(":8080", r)
 }
