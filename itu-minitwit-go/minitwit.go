@@ -39,7 +39,7 @@ func GetUserByUsername(username string, db *sql.DB) (User, error) {
 
 func GetUserById(id int, db *sql.DB) (User, error) {
 	user := User{}
-	err := db.QueryRow("SELECT * FROM user WHERE user_id=%d", id, 1).
+	err := db.QueryRow("SELECT * FROM user WHERE user_id= ?", id, 1).
 		Scan(&user.User_id, &user.Username, &user.Email, &user.Pw_hash)
 
 	return user, err
