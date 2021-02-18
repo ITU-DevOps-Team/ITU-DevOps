@@ -243,6 +243,64 @@ func GetMessageByString(store *sessions.CookieStore, db *sql.DB) http.Handler {
 	})
 }
 
+
+
+func FollowUserHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		if userId == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		params := mux.Vars(r)
+		whomUsername := params["username"]
+
+		whom, err := GetUserByUsername(whomUsername, db)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		result, error := db.Exec("INSERT INTO follower (who_id, whom_id) VALUES (?, ?)", userId.(int), whom.User_id)
+		log.Println(result)
+		if error != nil {
+			log.Fatal(error)
+		}
+		session.AddFlash(fmt.Sprintf("You are now following %s.", whomUsername))
+		http.Redirect(w, r, fmt.Sprintf("/%s", whomUsername), http.StatusFound)
+	})
+}
+
+func UnfollowUserHandler(store *sessions.CookieStore, db *sql.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		if userId == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		params := mux.Vars(r)
+		whomUsername := params["username"]
+
+		whom, err := GetUserByUsername(whomUsername, db)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		}
+		result, error := db.Exec("DELETE FROM follower WHERE who_id=? AND whom_id=?", userId.(int), whom.User_id)
+		log.Println(result)
+		if error != nil {
+			log.Fatal(error)
+		}
+		session.AddFlash(fmt.Sprintf("You are no longer following %s.", whomUsername))
+		http.Redirect(w, r, "/", http.StatusFound)
+	})
+}
+
+
 func BeforeRequestMiddleware(store *sessions.CookieStore, db *sql.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
