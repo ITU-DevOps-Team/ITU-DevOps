@@ -28,18 +28,12 @@ const SECRET_KEY = "development key"
 func GetUserByUsername(username string, db *gorm.DB) (User, error) {
 	user := User{}
 	result := db.Where("username = ?", username).First(&user)
-	// err := db.QueryRow("SELECT * FROM user WHERE username= ?", username, 1).
-	// 	Scan(&user.UserID, &user.Username, &user.Email, &user.PwHash)
-
 	return user, result.Error
 }
 
 func GetUserById(id uint, db *gorm.DB) (User, error) {
 	user := User{}
 	result := db.First(&user, id)
-	// err := db.QueryRow("SELECT * FROM user WHERE user_id= ?", id, 1).
-	// 	Scan(&user.UserID, &user.Username, &user.Email, &user.PwHash)
-
 	return user, result.Error
 }
 
@@ -115,13 +109,6 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			} else if user, _ := GetUserByUsername(r.FormValue("username"), db); user.Username == r.FormValue("username") {
 				errorMsg = "This username is already taken"
 			} else {
-				// statement, err := sql.Prepare("INSERT INTO user (username, email, pw_hash) values (?,?,?)")
-				// if err != nil {
-				// 	log.Println(err)
-				// 	return
-				// }
-				// defer statement.Close()
-
 				pass := r.FormValue("password")
 				hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
 
@@ -130,7 +117,6 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 					return
 				}
 
-				// statement.Exec(r.FormValue("username"), r.FormValue("email"), hash)
 				user := User{
 					Username: r.FormValue("username"),
 					Email:    r.FormValue("email"),
@@ -145,7 +131,6 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 		response := map[string]string{"error": errorMsg}
 		log.Println(response)
-		// w.Write([]byte(json.Marshal(response)))
 		// TODO render register template with error
 	})
 }
@@ -212,8 +197,6 @@ func AddMessageHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		if textValue != "" {
 			message := Message{Author_id: userId.(uint), Text: textValue, Pub_date: strconv.Itoa(int(time.Now().Unix())), Flagged: 0}
 			result := db.Create(&message)
-			// result := db.Exec("INSERT INTO message (author_id, text, pub_date, flagged) VALUES (?, ?, ?, 0)", userId.(int), textValue, time.Now().Unix())
-			log.Println(result)
 
 			if result.Error != nil {
 				log.Fatal(result.Error)
@@ -255,7 +238,6 @@ func initDb(driver string, datasource string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(datasource), &gorm.Config{})
 	sql, _ := db.DB()
 
-	// db, err := sql.Open(driver, datasource)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -269,7 +251,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// defer db.Close()
 
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
