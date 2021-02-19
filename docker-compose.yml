@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  minitwit:
+    image: minitwit:latest
+    build:
+      dockerfile: .deploy/minitwit-go/dockerfile
+      context: ./itu-minitwit-go/
+    restart: on-failure
+    ports:
+      - 8080:8080
