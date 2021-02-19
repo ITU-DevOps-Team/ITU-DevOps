@@ -1,11 +1,6 @@
 FROM golang:1.13 AS build
 
 WORKDIR /src
-# COPY go.mod /src/
-# COPY go.sum /src/
-# COPY deps.go /src/
-# COPY minitwit.go /src/
-
 COPY ./itu-minitwit-go/go.mod /src/
 COPY ./itu-minitwit-go/go.sum /src/
 COPY ./itu-minitwit-go/deps.go /src/
