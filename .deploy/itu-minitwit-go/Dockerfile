@@ -1,10 +1,8 @@
-FROM golang:1.13 AS build
+FROM golang:1.15
 
 WORKDIR /src
-COPY ./itu-minitwit-go/go.mod /src/
-COPY ./itu-minitwit-go/go.sum /src/
-COPY ./itu-minitwit-go/deps.go /src/
-COPY ./itu-minitwit-go/minitwit.go /src/
+COPY ./itu-minitwit-go/go.* /src/
+COPY ./itu-minitwit-go/*.go /src/
 
 RUN mkdir -p /db_backup/
 COPY ./db_backup/minitwit.db /db_backup/
