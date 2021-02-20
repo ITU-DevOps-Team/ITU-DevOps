@@ -91,6 +91,16 @@ func FollowHandler(db *gorm.DB) http.Handler {
 func AuthenticationMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
+			header := r.Header.Get("Authorization")
+			if header != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
+				response := Response{
+					Status:    http.StatusForbidden,
+					Error_msg: "You are not authorized to use this resource!",
+				}
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode(&response)
+				return
+			}
 
 			next.ServeHTTP(w, r)
 		}
