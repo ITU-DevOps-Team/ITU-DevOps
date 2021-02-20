@@ -1,7 +1,5 @@
 package main
 
-//import ("gorm.io/gorm")
-
 type User struct {
 	UserID   uint `gorm:"primaryKey;autoIncrement"`
 	Username string
@@ -15,8 +13,8 @@ type Follower struct {
 
 type User_ struct {
 	Username string `json:"username"`
-	Email string `json:"email"`
-	Pwd string	`json:"pwd"`
+	Email    string `json:"email"`
+	Pwd      string `json:"pwd"`
 }
 
 type Message_ struct {
@@ -24,10 +22,10 @@ type Message_ struct {
 }
 
 type Response struct {
-	Status int `json:"status"`
+	Status    int    `json:"status"`
 	Error_msg string `json:"error_msg"`
 }
 
-type Latest struct {
+type LatestS struct {
 	Latest int `json:"latest"`
 }

@@ -1,17 +1,16 @@
 package main
 
 import (
-	"log"
-	"strings"
-	"net/http"
 	"encoding/json"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"strconv"
 )
-
-
 
 func LatestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,29 +44,27 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 			error_msg = "The username is already taken"
 		}
 
-
 		if error_msg != "" {
 			e := Response{
-				Status: http.StatusBadRequest,
+				Status:    http.StatusBadRequest,
 				Error_msg: error_msg,
 			}
 			json.NewEncoder(w).Encode(&e)
 			return
 		}
-		
+
 		hash, err := bcrypt.GenerateFromPassword([]byte(u.Pwd), bcrypt.MinCost)
-		
+
 		user := User{
 			Username: u.Username,
-			PwHash: string(hash),
-			Email: u.Email,
+			PwHash:   string(hash),
+			Email:    u.Email,
 		}
 
 		db.Create(&user)
 
-
 		e := Response{
-			Status: http.StatusNoContent,
+			Status:    http.StatusNoContent,
 			Error_msg: "",
 		}
 		json.NewEncoder(w).Encode(&e)
@@ -119,12 +116,12 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 	}
 }
 func LatestMiddleware() func(http.Handler) http.Handler {
-	return func (next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 			keys, ok := r.URL.Query()["latest"]
-		
+
 			if !ok || len(keys[0]) < 1 {
-			log.Println("Request does not contain a new latest value")
+				log.Println("Request does not contain a new latest value")
 			} else {
 				Latest_.Latest, _ = strconv.Atoi(keys[0])
 				log.Println(Latest_.Latest)
