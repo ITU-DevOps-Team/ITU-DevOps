@@ -88,7 +88,7 @@ func FollowHandler(db *gorm.DB) http.Handler {
 	})
 }
 
-func AuthenticationMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
+func AuthenticationMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")

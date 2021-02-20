@@ -40,7 +40,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(LatestMiddleware())
-	r.Use(AuthenticationMiddleware(gorm))
+	r.Use(AuthenticationMiddleware())
 	r.Handle("/latest", LatestHandler()).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(gorm)).Methods("GET")
