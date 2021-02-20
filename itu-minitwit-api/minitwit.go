@@ -35,6 +35,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+
+
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()
@@ -42,10 +44,11 @@ func main() {
 
 	//API ROUTES
 	r.Handle("/latest", LatestHandler(store, gorm)).Methods("GET")
-	r.Handle("/register", RegisterApiHandler(store, gorm)).Methods("GET")
+	r.Handle("/register", RegisterApiHandler(store, gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(store, gorm)).Methods("GET")
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/fllws/{username}", FollowHandler(store, gorm)).Methods("GET", "POST")
 
-	http.ListenAndServe(":8080", r)
+	//http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

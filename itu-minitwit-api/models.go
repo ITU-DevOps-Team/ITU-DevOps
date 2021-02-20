@@ -8,16 +8,22 @@ type User struct {
 	Email    string
 	PwHash   string
 }
-
-type Message struct {
-	Message_id uint `gorm:"primaryKey;autoIncrement"`
-	Author_id  uint
-	Text       string
-	Pub_date   string
-	Flagged    int
-}
-
 type Follower struct {
 	WhoID  uint
 	WhomID uint
+}
+
+type User_ struct {
+	Username string `json:"username"`
+	Email string `json:"email"`
+	Pwd string	`json:"pwd"`
+}
+
+type Message_ struct {
+	Content string `json:"content"`
+}
+
+type Response struct {
+	Status int `json:"status"`
+	Error_msg string `json:"error_msg"`
 }

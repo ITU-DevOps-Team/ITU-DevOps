@@ -29,6 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()

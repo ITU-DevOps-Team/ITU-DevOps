@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
+	"strings"
 	"net/http"
-
+	"encoding/json"
 	"github.com/gorilla/sessions"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -14,9 +16,53 @@ func LatestHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	})
 }
 
-func ResgisterApiHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func RegisterApiHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		var u User_
+		error_msg := ""
+		err := json.NewDecoder(r.Body).Decode(&u)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if u.Username == "" {
+			error_msg = "You have to enter a username"
+		} else if u.Email == "" || !strings.ContainsAny(u.Email, "@") {
+			error_msg = "You have to enter a email"
+		} else if u.Pwd == "" {
+			error_msg = "You have to enter a password"
+		} else if user_check, _ := GetUserByUsername(u.Username, db); user_check.Username == u.Username {
+			error_msg = "The username is already taken"
+		}
+
+
+		if error_msg != "" {
+			e := Response{
+				Status: http.StatusBadRequest,
+				Error_msg: error_msg,
+			}
+			json.NewEncoder(w).Encode(&e)
+			return
+		}
+		
+		hash, err := bcrypt.GenerateFromPassword([]byte(u.Pwd), bcrypt.MinCost)
+		
+		user := User{
+			Username: u.Username,
+			PwHash: string(hash),
+			Email: u.Email,
+		}
+
+		db.Create(&user)
+
+
+		e := Response{
+			Status: http.StatusNoContent,
+			Error_msg: "",
+		}
+		json.NewEncoder(w).Encode(&e)
 	})
 }
 
