@@ -6,10 +6,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/gorilla/sessions"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+
 )
 
 const DRIVER = "sqlite3"
@@ -171,4 +174,73 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 
 		return http.HandlerFunc(mdfn)
 	}
+}
+
+
+
+func FollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		if userId == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		params := mux.Vars(r)
+		whomUsername := params["username"]
+
+		whom, err := GetUserByUsername(whomUsername, db)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		follower := Follower{
+			WhoID: 	userId.(uint),
+			WhomID: whom.UserID,
+		}
+
+		result := db.Create(&follower)
+		log.Println(result)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		session.AddFlash(fmt.Sprintf("You are now following %s.", whomUsername))
+		http.Redirect(w, r, fmt.Sprintf("/%s", whomUsername), http.StatusFound)
+	})
+}
+
+func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		if userId == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		params := mux.Vars(r)
+		whomUsername := params["username"]
+
+		whom, err := GetUserByUsername(whomUsername, db)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+		follower := Follower{
+			WhoID: 	userId.(uint),
+			WhomID: whom.UserID,
+		}
+
+		result := db.Where("who_id = ? and whom_id = ?", follower.WhoID, follower.WhomID).Delete(&follower)
+		log.Println(result)
+		if result.Error != nil {
+			log.Fatal(result.Error)
+		}
+		session.AddFlash(fmt.Sprintf("You are no longer following %s.", whomUsername))
+		http.Redirect(w, r, "/", http.StatusFound)
+	})
 }

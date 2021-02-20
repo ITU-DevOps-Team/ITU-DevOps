@@ -40,8 +40,8 @@ func main() {
 	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
 	// r.Handle("/{username}", TestHandler(sql)).Methods("GET")
-	// r.Handle("/{username}/follow", TestHandler(sql)).Methods("GET")
-	// r.Handle("/{username}/unfollow", TestHandler(sql)).Methods("GET")
+	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
+	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")
 	// r.Handle("/user/{id}", GetUserByIdHandler(gorm)).Methods("GET")
 
 	http.ListenAndServe(":8080", r)
