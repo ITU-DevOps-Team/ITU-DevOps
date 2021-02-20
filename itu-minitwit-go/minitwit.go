@@ -34,6 +34,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
 	r.Handle("/", HomeHandler()).Methods("GET")
+<<<<<<< HEAD
 	// r.Handle("/public", TestHandler(sql)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")
@@ -43,6 +44,19 @@ func main() {
 	// r.Handle("/{username}/follow", TestHandler(sql)).Methods("GET")
 	// r.Handle("/{username}/unfollow", TestHandler(sql)).Methods("GET")
 	// r.Handle("/user/{id}", GetUserByIdHandler(gorm)).Methods("GET")
+=======
+	r.Handle("/public", TestHandler(db)).Methods("GET")
+	r.Handle("/login", LoginHandler(store, db)).Methods("GET", "POST")
+	r.Handle("/register", RegisterHandler(store, db)).Methods("GET", "POST")
+	r.Handle("/logout", LogoutHandler(store, db)).Methods("GET")
+	r.Handle("/add_message", TestHandler(db)).Methods("POST")
+	r.Handle("/{username}", TestHandler(db)).Methods("GET")
+	r.Handle("/{username}/follow", FollowUserHandler(store, db)).Methods("GET")
+	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, db)).Methods("GET")
+	r.Handle("/test", TestHandler(db)).Methods("GET")
+	r.Handle("/user/{id}", GetUserByIdHandler(db)).Methods("GET")
+	r.Handle("/get_message", GetMessageByString(store, db)).Methods("GET")
+>>>>>>> e92eb79e232baa0a94276e56bc8dd81cb0095aaa
 
 	http.ListenAndServe(":8080", r)
 }
