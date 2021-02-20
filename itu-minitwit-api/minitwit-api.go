@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -20,7 +19,6 @@ const SECRET_KEY = "development key"
 var Latest_ = Latest{
 	Latest: 0,
 }
-
 
 func initDb(driver string, datasource string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(datasource), &gorm.Config{})
@@ -40,22 +38,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-
-	store := sessions.NewCookieStore([]byte(SECRET_KEY))
-
 	r := mux.NewRouter()
-	
 	r.Use(LatestMiddleware())
-	r.Use(BeforeRequestMiddleware(store, gorm))
-
-
-	//API ROUTES
+	r.Use(AuthenticationMiddleware(gorm))
 	r.Handle("/latest", LatestHandler()).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
-	r.Handle("/msgs", MessagesHandler(store, gorm)).Methods("GET")
-	r.Handle("/msgs/{username}", MessagesPerUserHandler(store, gorm)).Methods("GET", "POST")
-	r.Handle("/fllws/{username}", FollowHandler(store, gorm)).Methods("GET", "POST")
+	r.Handle("/msgs", MessagesHandler(gorm)).Methods("GET")
+	r.Handle("/msgs/{username}", MessagesPerUserHandler(gorm)).Methods("GET", "POST")
+	r.Handle("/fllws/{username}", FollowHandler(gorm)).Methods("GET", "POST")
 
-	//http.ListenAndServe(":8080", r)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

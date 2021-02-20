@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -71,43 +70,27 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 	})
 }
 
-func MessagesHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func MessagesHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})
 }
 
-func MessagesPerUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})
 }
 
-func FollowHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func FollowHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})
 }
 
-func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http.Handler) http.Handler {
+func AuthenticationMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
-			session, _ := store.Get(r, "session_cookie")
-			userId := session.Values["user_id"]
-			if userId != nil {
-				id := userId.(uint)
-				user, err := GetUserById(id, db)
-				if err != nil {
-					log.Print(err)
-				}
-
-				session.Values["user_id"] = user.UserID
-				err = session.Save(r, w)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
 
 			next.ServeHTTP(w, r)
 		}
@@ -115,6 +98,7 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 		return http.HandlerFunc(mdfn)
 	}
 }
+
 func LatestMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
