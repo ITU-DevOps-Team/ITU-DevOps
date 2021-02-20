@@ -10,13 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func LatestHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+
+
+func LatestHandler(latest *int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		latestObj := Latest{
+			Latest: *latest,
+		}
+
+		json.NewEncoder(w).Encode(&latestObj)
+
 	})
 }
 
-func RegisterApiHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func RegisterApiHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u User_
 		error_msg := ""
@@ -107,6 +114,22 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 			next.ServeHTTP(w, r)
 		}
 
+		return http.HandlerFunc(mdfn)
+	}
+}
+func LatestMiddleware(latest *int) func(http.Handler) http.Handler {
+	return func (next http.Handler) http.Handler {
+		mdfn := func(w http.ResponseWriter, r *http.Request) {
+			keys, ok := r.URL.Query()["latest"]
+		
+			if !ok || len(keys[0]) < 1 {
+			log.Println("Request does not contain a new latest value")
+			} else {
+				latest := keys[0]
+				log.Println(latest)
+			}
+			next.ServeHTTP(w, r)
+		}
 		return http.HandlerFunc(mdfn)
 	}
 }
