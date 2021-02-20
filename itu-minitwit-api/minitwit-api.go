@@ -17,6 +17,10 @@ const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
 
+var Latest_ = Latest{
+	Latest: 0,
+}
+
 
 func initDb(driver string, datasource string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(datasource), &gorm.Config{})
@@ -36,18 +40,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	latest := 0
 
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()
 	
-	r.Use(LatestMiddleware(&latest))
+	r.Use(LatestMiddleware())
 	r.Use(BeforeRequestMiddleware(store, gorm))
 
 
 	//API ROUTES
-	r.Handle("/latest", LatestHandler(&latest)).Methods("GET")
+	r.Handle("/latest", LatestHandler()).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(store, gorm)).Methods("GET")
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(store, gorm)).Methods("GET", "POST")

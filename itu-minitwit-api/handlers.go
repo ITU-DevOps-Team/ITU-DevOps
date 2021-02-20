@@ -8,14 +8,15 @@ import (
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 
 
-func LatestHandler(latest *int) http.Handler {
+func LatestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		latestObj := Latest{
-			Latest: *latest,
+			Latest: Latest_.Latest,
 		}
 
 		json.NewEncoder(w).Encode(&latestObj)
@@ -117,7 +118,7 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 		return http.HandlerFunc(mdfn)
 	}
 }
-func LatestMiddleware(latest *int) func(http.Handler) http.Handler {
+func LatestMiddleware() func(http.Handler) http.Handler {
 	return func (next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 			keys, ok := r.URL.Query()["latest"]
@@ -125,8 +126,8 @@ func LatestMiddleware(latest *int) func(http.Handler) http.Handler {
 			if !ok || len(keys[0]) < 1 {
 			log.Println("Request does not contain a new latest value")
 			} else {
-				latest := keys[0]
-				log.Println(latest)
+				Latest_.Latest, _ = strconv.Atoi(keys[0])
+				log.Println(Latest_.Latest)
 			}
 			next.ServeHTTP(w, r)
 		}
