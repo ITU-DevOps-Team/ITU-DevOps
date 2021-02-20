@@ -244,3 +244,7 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 		http.Redirect(w, r, "/", http.StatusFound)
 	})
 }
+
+func MsgsHandler(db *gorm.DB) http.handler {
+	return nil
+}
