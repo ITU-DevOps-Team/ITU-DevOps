@@ -1,18 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-	"fmt"
 
-	"github.com/gorilla/sessions"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-
 )
 
 const DRIVER = "sqlite3"
@@ -176,8 +175,6 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 	}
 }
 
-
-
 func FollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -198,7 +195,7 @@ func FollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		}
 
 		follower := Follower{
-			WhoID: 	userId.(uint),
+			WhoID:  userId.(uint),
 			WhomID: whom.UserID,
 		}
 
@@ -231,7 +228,7 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 		}
 
 		follower := Follower{
-			WhoID: 	userId.(uint),
+			WhoID:  userId.(uint),
 			WhomID: whom.UserID,
 		}
 
