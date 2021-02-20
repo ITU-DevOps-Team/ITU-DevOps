@@ -26,6 +26,6 @@ type Response struct {
 	Error_msg string `json:"error_msg"`
 }
 
-type LatestS struct {
+type Latest struct {
 	Latest int `json:"latest"`
 }
