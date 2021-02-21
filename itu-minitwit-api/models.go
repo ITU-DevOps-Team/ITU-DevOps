@@ -11,6 +11,14 @@ type Follower struct {
 	WhomID uint
 }
 
+type Message struct {
+	Message_id uint `gorm:"primaryKey;autoIncrement"`
+	Author_id  uint
+	Text       string
+	Pub_date   int
+	Flagged    int
+}
+
 type User_ struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
