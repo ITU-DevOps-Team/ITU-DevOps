@@ -217,7 +217,6 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 			}
 
 			w.WriteHeader(http.StatusNoContent)
-
 		}
 	})
 }
