@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -136,7 +135,7 @@ func AddMessageHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		}
 		textValue := r.FormValue("text")
 		if textValue != "" {
-			message := Message{Author_id: userId.(uint), Text: textValue, Pub_date: strconv.Itoa(int(time.Now().Unix())), Flagged: 0}
+			message := Message{Author_id: userId.(uint), Text: textValue, Pub_date: int(time.Now().Unix()), Flagged: 0}
 			result := db.Create(&message)
 
 			if result.Error != nil {

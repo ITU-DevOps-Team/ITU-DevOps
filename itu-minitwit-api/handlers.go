@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -99,6 +101,7 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 			var queryData []result
 			db.Table("messages").
 				Joins("JOIN users on users.user_id = messages.author_id").
+				Where("messages.flagged = 0").
 				Order("messages.pub_date DESC").
 				Limit(numberOfMessages).
 				Scan(&queryData)
@@ -127,7 +130,94 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 
 func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		//TODO: Update latest value?? Or does the middleware handle that?
+		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
+		//default set to 100
+		numberOfMessages := 100
+		if numberOfMessagesHeaderResult != "" {
+			parsed, err := strconv.Atoi(numberOfMessagesHeaderResult)
+			if err == nil {
+				numberOfMessages = parsed
+			}
+		}
+
+		if r.Method == "GET" {
+			username := mux.Vars(r)["username"]
+			user, err := GetUserByUsername(username, db)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusNotFound)
+				return
+			}
+
+			//type used for scanning the query results
+			type result struct {
+				UserID    int
+				Username  string
+				Email     string
+				PwHash    string
+				MessageID int
+				AuthorID  int
+				Text      string
+				PubDate   int
+				Flagged   int
+			}
+
+			var queryData []result
+			db.Table("messages").
+				Joins("JOIN users on users.user_id = messages.author_id").
+				Where("messages.flagged = 0 AND users.user_id = ?", user.UserID).
+				Order("messages.pub_date DESC").
+				Limit(numberOfMessages).
+				Scan(&queryData)
+
+			type filteredMessage struct {
+				Content string
+				PubDate int
+				User    string
+			}
+
+			filteredMessages := []filteredMessage{}
+
+			for i := range queryData {
+				filteredMsg := filteredMessage{}
+				filteredMsg.Content = queryData[i].Text
+				filteredMsg.PubDate = queryData[i].PubDate
+				filteredMsg.User = queryData[i].Username
+				filteredMessages = append(filteredMessages, filteredMsg)
+			}
+
+			json.NewEncoder(w).Encode(&filteredMessages)
+			return
+		} else if r.Method == "POST" {
+			var msg Message_
+			err := json.NewDecoder(r.Body).Decode(&msg)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			username := mux.Vars(r)["username"]
+			user, err := GetUserByUsername(username, db)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusNotFound)
+				return
+			}
+
+			message := Message{
+				Author_id: user.UserID,
+				Text:      msg.Content,
+				Pub_date:  int(time.Now().Unix()),
+				Flagged:   0,
+			}
+
+			result := db.Create(&message)
+			if result.Error != nil {
+				log.Fatal(result.Error)
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+		}
 	})
 }
 
