@@ -72,7 +72,56 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 
 func MessagesHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		//TODO: Update latest value?? Or does the middleware handle that?
+		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
+		//default set to 100
+		numberOfMessages := 100
+		if numberOfMessagesHeaderResult != "" {
+			parsed, err := strconv.Atoi(numberOfMessagesHeaderResult)
+			if err == nil {
+				numberOfMessages = parsed
+			}
+		}
+		if r.Method == "GET" {
+			//type used for scanning the query results
+			type result struct {
+				UserID    int
+				Username  string
+				Email     string
+				PwHash    string
+				MessageID int
+				AuthorID  int
+				Text      string
+				PubDate   int
+				Flagged   int
+			}
+
+			var queryData []result
+			db.Table("messages").
+				Joins("JOIN users on users.user_id = messages.author_id").
+				Order("messages.pub_date DESC").
+				Limit(numberOfMessages).
+				Scan(&queryData)
+
+			type filteredMessage struct {
+				Content string
+				PubDate int
+				User    string
+			}
+
+			filteredMessages := []filteredMessage{}
+
+			for i := range queryData {
+				filteredMsg := filteredMessage{}
+				filteredMsg.Content = queryData[i].Text
+				filteredMsg.PubDate = queryData[i].PubDate
+				filteredMsg.User = queryData[i].Username
+				filteredMessages = append(filteredMessages, filteredMsg)
+			}
+
+			json.NewEncoder(w).Encode(&filteredMessages)
+			return
+		}
 	})
 }
 

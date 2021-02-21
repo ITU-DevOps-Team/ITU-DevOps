@@ -261,4 +261,7 @@ dmypy.json
 # profiling data
 .prof
 
+#Database file
+minitwit.db
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,python,powershell,c,go
