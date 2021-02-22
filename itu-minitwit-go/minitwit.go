@@ -29,6 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	LoadTemplates()
 
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 

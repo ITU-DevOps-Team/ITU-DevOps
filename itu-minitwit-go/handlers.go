@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
@@ -19,39 +20,63 @@ const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
 
+var templates map[string]*template.Template
+
+func LoadTemplates() {
+	var layoutTemplate = "templates/layout.gohtml"
+	templates = make(map[string]*template.Template)
+
+	templates["login"] = template.Must(template.ParseFiles(layoutTemplate, "templates/login.gohtml"))
+	templates["register"] = template.Must(template.ParseFiles(layoutTemplate, "templates/register.gohtml"))
+	templates["personal_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/personal_timeline.gohtml"))
+	templates["public_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/public_timeline.gohtml"))
+}
+
 //LoginHandler ...
 func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
 
 		userId := session.Values["user_id"]
-		if isLoggedIn := userId != ""; isLoggedIn {
+		isLoggedIn := userId != "" && userId != nil
+		if isLoggedIn {
+			fmt.Println("user already signed in -> redirecting to /")
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
 		var errorMsg string
-		if r.Method == "POST" {
-			user, err := GetUserByUsername(r.FormValue("username"), db)
-			if err != nil {
-				errorMsg = "Invalid username"
-				log.Println(err)
-			} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-				errorMsg = "Invalid password"
-			} else {
-				session.AddFlash("You were logged in")
-				session.Values["user_id"] = user.UserID
-				err = session.Save(r, w)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				http.Redirect(w, r, "/", http.StatusFound)
-			}
-		}
 
-		response := map[string]string{"error": errorMsg}
-		log.Println(response)
-		// TODO render login template with error
+		if r.Method == "GET" {
+			if err := templates["login"].Execute(w, nil); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+				user, err := GetUserByUsername(r.FormValue("username"), db)
+				if err != nil {
+					errorMsg = "Invalid username"
+					log.Println(err)
+				} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
+					errorMsg = "Invalid password"
+				} else {
+					session.AddFlash("You were logged in")
+					session.Values["user_id"] = user.UserID
+					err = session.Save(r, w)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					http.Redirect(w, r, "/", http.StatusFound)
+				}
+			//renders sign in page again with error
+			viewContent := ViewContent{
+				Error: true,
+				ErrorMessage: errorMsg,
+			}
+
+			if err := templates["login"].Execute(w, viewContent); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			}
 	})
 }
 

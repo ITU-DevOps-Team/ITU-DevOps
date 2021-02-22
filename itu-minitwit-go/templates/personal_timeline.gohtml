@@ -1,0 +1,60 @@
+{{ define "title" }}
+    {{if .SameUser}}
+        Personal Timeline
+    {{else}}
+        {{.Username}}'s timeline
+    {{end}}
+{{ end }}
+
+{{ define "content" }}
+    {{ if .Error }}
+        <div class=error><strong>Error:</strong> {{ .ErrorMessage }}</div>
+    {{ end }}
+    {{ if .Success }}
+        <div class=success><strong>Success:</strong> {{ .SuccessMessage }}</div>
+    {{ end }}
+    {{if .SignedIn}}
+        {{if .SameUser}}
+            <div class=twitbox>
+                <h3>What is on your mind?</h3>
+                <form action="/personaltimeline" method="post">
+                    <p>
+                        <input type=text name=text size=60>
+                        <input type=submit value="Post">
+                    </p>
+                </form>
+            </div>
+        {{else }}
+            <div class=followstatus>
+                {{if .AlreadyFollowing}}
+                    You are following this user.
+                    <a class=unfollow href="{{.Username}}/unfollow">Unfollow user</a>
+                {{else}}
+                    You are not following this user.
+                    <a class=follow href="{{.Username}}/follow">Follow user</a>
+                {{end}}
+            </div>
+        {{end}}
+    {{end}}
+
+    <ul class=messages>
+    <div>
+        {{if eq 0 (len .Posts)}}
+            <li><em>No messages to show</em>
+        {{else}}
+            {{ range .Posts }}
+                <li>
+                    <p>
+                        <strong>
+                            <a href="/{{.Username}}">{{ .Username}}</a>
+                        </strong>
+                        {{ .Text }}
+                        <small>{{ .Pub_date }}</small>
+                    </p>
+                </li>
+            {{ end }}
+    </div>
+    </ul>
+{{end}}
+
+{{end}}
