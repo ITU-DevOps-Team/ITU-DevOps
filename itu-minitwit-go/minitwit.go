@@ -29,18 +29,23 @@ func main() {
 		log.Fatal(err)
 	}
 
+	LoadTemplates()
 
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
-	r.Handle("/", HomeHandler()).Methods("GET")
-	// r.Handle("/public", TestHandler(sql)).Methods("GET")
+
+	//CSS
+	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
+
+	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
-	// r.Handle("/{username}", TestHandler(sql)).Methods("GET")
+	r.Handle("/personaltimeline", PersonalTimeline(store, gorm)).Methods("GET", "POST")
+	r.Handle("/{username}", UserTimeline(store, gorm)).Methods("GET")
 	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
 	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")
 	// r.Handle("/user/{id}", GetUserByIdHandler(gorm)).Methods("GET")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
@@ -19,39 +20,63 @@ const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
 
+var templates map[string]*template.Template
+
+func LoadTemplates() {
+	var layoutTemplate = "templates/layout.gohtml"
+	templates = make(map[string]*template.Template)
+
+	templates["login"] = template.Must(template.ParseFiles(layoutTemplate, "templates/login.gohtml"))
+	templates["register"] = template.Must(template.ParseFiles(layoutTemplate, "templates/register.gohtml"))
+	templates["personal_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/personal_timeline.gohtml"))
+	templates["public_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/public_timeline.gohtml"))
+}
+
 //LoginHandler ...
 func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
 
 		userId := session.Values["user_id"]
-		if isLoggedIn := userId != ""; isLoggedIn {
+		isLoggedIn := userId != "" && userId != nil
+		if isLoggedIn {
+			fmt.Println("user already signed in -> redirecting to /")
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
 		var errorMsg string
-		if r.Method == "POST" {
-			user, err := GetUserByUsername(r.FormValue("username"), db)
-			if err != nil {
-				errorMsg = "Invalid username"
-				log.Println(err)
-			} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-				errorMsg = "Invalid password"
-			} else {
-				session.AddFlash("You were logged in")
-				session.Values["user_id"] = user.UserID
-				err = session.Save(r, w)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				http.Redirect(w, r, "/", http.StatusFound)
-			}
-		}
 
-		response := map[string]string{"error": errorMsg}
-		log.Println(response)
-		// TODO render login template with error
+		if r.Method == "GET" {
+			if err := templates["login"].Execute(w, nil); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+				user, err := GetUserByUsername(r.FormValue("username"), db)
+				if err != nil {
+					errorMsg = "Invalid username"
+					log.Println(err)
+				} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
+					errorMsg = "Invalid password"
+				} else {
+					session.AddFlash("You were logged in")
+					session.Values["user_id"] = user.UserID
+					err = session.Save(r, w)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					http.Redirect(w, r, "/", http.StatusFound)
+				}
+			//renders sign in page again with error
+			viewContent := ViewContent{
+				Error: true,
+				ErrorMessage: errorMsg,
+			}
+
+			if err := templates["login"].Execute(w, viewContent); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			}
 	})
 }
 
@@ -74,26 +99,56 @@ func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
-		isLoggedIn := session.Values["user_id"] != nil
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
 		if isLoggedIn {
+			fmt.Println("user already signed in")
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		var errorMsg string
-		if r.Method == "POST" {
-			if len(r.FormValue("username")) == 0 {
-				errorMsg = "You have to enter a username"
-			} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
+		if r.Method == "GET"{
+			if err := templates["register"].Execute(w, nil); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+
+			//parsing form posted by user
+			r.ParseForm()
+			var errorMsg string
+
+			formUsername := r.FormValue("username")
+			formEmail := r.FormValue("email")
+			formPassword := r.FormValue("password")
+			formPasswordConfirm := r.FormValue("password_confirm")
+
+			isEmpty_formUsername := formUsername == ""
+			isEmpty_formEmail := formEmail == ""
+			isEmpty_formPassword := formPassword == ""
+			isEmpty_formPasswordConfirm := formPasswordConfirm == ""
+			incorrectFormat_formEmail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
+			user, _ := GetUserByUsername(formUsername, db);
+			usernameTaken := user.Username == formUsername
+
+			if (isEmpty_formUsername){
+				errorMsg = "username is empty"
+			} else if (isEmpty_formEmail){
+				errorMsg = "email is empty"
+			} else if (isEmpty_formPassword){
+				errorMsg = "password is empty"
+			} else if (isEmpty_formPasswordConfirm){
+				errorMsg = "password repeat is empty"
+			} else if incorrectFormat_formEmail {
 				errorMsg = "You have to enter a valid email address"
-			} else if len(r.FormValue("password")) == 0 {
-				errorMsg = "You have to enter a password"
-			} else if r.FormValue("password") != r.FormValue("password2") {
-				errorMsg = "The passwords do not match"
-			} else if user, _ := GetUserByUsername(r.FormValue("username"), db); user.Username == r.FormValue("username") {
-				errorMsg = "This username is already taken"
+			} else if (formPassword != formPasswordConfirm){
+				//Passwords does not match
+				errorMsg = "password and repeated password does not match"
+			} else if usernameTaken{
+				//Username is already taken
+				errorMsg = "username already exist"
+
 			} else {
-				pass := r.FormValue("password")
-				hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
+				//Sign up user
+				hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
 
 				if err != nil {
 					log.Println(err)
@@ -101,26 +156,54 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				}
 
 				user := User{
-					Username: r.FormValue("username"),
-					Email:    r.FormValue("email"),
+					Username: formUsername,
+					Email:    formEmail,
 					PwHash:   string(hash),
 				}
 
 				db.Create(&user)
-				http.Redirect(w, r, "/login", http.StatusCreated)
-				// TODO return successful registration status
+				//renders sign in page again with error
+				viewContent := ViewContent{
+					Success: true,
+					SuccessMessage: "User successfully created",
+				}
+
+				if err := templates["login"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+			if errorMsg != "" {
+				//renders register page again with error
+				viewContent := ViewContent{
+					Error: true,
+					ErrorMessage: errorMsg,
+				}
+
+				if err := templates["register"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
 			}
 		}
-
-		response := map[string]string{"error": errorMsg}
-		log.Println(response)
-		// TODO render register template with error
 	})
 }
 
-func HomeHandler() http.Handler {
+func HomeHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to itu-minitwit"))
+		session, _ := store.Get(r, "session_cookie")
+
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+
+		posts := GetPublicPosts(10, db)
+
+		viewContent := ViewContent{
+			SignedIn: isLoggedIn,
+			Posts: posts,
+		}
+		if err := templates["public_timeline"].Execute(w, viewContent); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 }
 
@@ -237,6 +320,133 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 			log.Fatal(result.Error)
 		}
 		session.AddFlash(fmt.Sprintf("You are no longer following %s.", whomUsername))
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/%s", whomUsername), http.StatusFound)
+	})
+}
+
+func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+		currentUserName := "" //username of the current user signed in
+
+		//redirect to public if not logged in
+		if !isLoggedIn {
+			http.Redirect(w, r, "/", 302)
+		}
+
+		user, err := GetUserById(userId.(uint), db)
+		checkErr(err)
+		currentUserName = user.Username
+
+		if r.Method == "GET" {
+			viewContent := ViewContent{
+				SignedIn: isLoggedIn,
+				SameUser: true, //must be
+				Posts:    GetPostsByUser(currentUserName, db),
+				Username: currentUserName,
+			}
+
+			if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+			r.ParseForm()
+			var errorMsg string
+			formText := r.FormValue("text")
+			isEmpty_formText := formText == ""
+
+			if (isEmpty_formText) {
+				errorMsg = "post is empty"
+			} else {
+
+				if userId == nil {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				if formText != "" {
+					message := Message{
+						Author_id: userId.(uint),
+						Text: formText,
+						Pub_date: int(time.Now().Unix()),
+						Flagged: 0,
+					}
+					result := db.Create(&message)
+
+					if result.Error != nil {
+						log.Fatal(result.Error)
+					}
+				}
+
+				viewContent := ViewContent{
+					SignedIn: isLoggedIn,
+					SameUser: true, //must be
+					Posts:    GetPostsByUser(currentUserName, db),
+					Username: currentUserName,
+					Success:        true,
+					SuccessMessage: "Post successfully created",
+				}
+
+				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+			if errorMsg != ""{
+				//display error
+				viewContent := ViewContent{
+					Error:        true,
+					ErrorMessage: errorMsg,
+				}
+
+				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+		}
+	})
+}
+
+func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+		currentUserName := "" //username of the current user signed in
+
+		if isLoggedIn{
+			user, err := GetUserById(userId.(uint), db)
+			checkErr(err)
+			currentUserName = user.Username
+		}
+
+		vars := mux.Vars(r)
+		usernameVisited := vars["username"]
+
+		//check if username visited exists
+		if !CheckUsernameExists(usernameVisited, db){
+			http.Redirect(w, r, "/", 302)
+		}
+
+		//if visited user is same as logged in user redirect to personal timeline
+		if currentUserName == usernameVisited{
+			PersonalTimeline(store, db)
+		}
+
+		viewContent := ViewContent{
+			SignedIn: isLoggedIn,
+			SameUser: currentUserName == usernameVisited,
+			Posts: GetPostsByUser(usernameVisited, db),
+			Username: usernameVisited,
+			AlreadyFollowing: CheckIfUserIsFollowed(currentUserName, usernameVisited, db),
+		}
+
+
+		if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 }
