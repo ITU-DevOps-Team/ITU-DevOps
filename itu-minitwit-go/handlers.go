@@ -320,7 +320,7 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 			log.Fatal(result.Error)
 		}
 		session.AddFlash(fmt.Sprintf("You are no longer following %s.", whomUsername))
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/%s", whomUsername), http.StatusFound)
 	})
 }
 
@@ -435,13 +435,13 @@ func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		if currentUserName == usernameVisited{
 			PersonalTimeline(store, db)
 		}
-		fmt.Println("hey")
 
 		viewContent := ViewContent{
 			SignedIn: isLoggedIn,
 			SameUser: currentUserName == usernameVisited,
 			Posts: GetPostsByUser(usernameVisited, db),
 			Username: usernameVisited,
+			AlreadyFollowing: CheckIfUserIsFollowed(currentUserName, usernameVisited, db),
 		}
 
 
