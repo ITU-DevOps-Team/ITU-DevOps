@@ -99,26 +99,56 @@ func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "session_cookie")
-		isLoggedIn := session.Values["user_id"] != nil
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
 		if isLoggedIn {
+			fmt.Println("user already signed in")
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		var errorMsg string
-		if r.Method == "POST" {
-			if len(r.FormValue("username")) == 0 {
-				errorMsg = "You have to enter a username"
-			} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
+		if r.Method == "GET"{
+			if err := templates["register"].Execute(w, nil); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+
+			//parsing form posted by user
+			r.ParseForm()
+			var errorMsg string
+
+			formUsername := r.FormValue("username")
+			formEmail := r.FormValue("email")
+			formPassword := r.FormValue("password")
+			formPasswordConfirm := r.FormValue("password_confirm")
+
+			isEmpty_formUsername := formUsername == ""
+			isEmpty_formEmail := formEmail == ""
+			isEmpty_formPassword := formPassword == ""
+			isEmpty_formPasswordConfirm := formPasswordConfirm == ""
+			incorrectFormat_formEmail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
+			user, _ := GetUserByUsername(formUsername, db);
+			usernameTaken := user.Username == formUsername
+
+			if (isEmpty_formUsername){
+				errorMsg = "username is empty"
+			} else if (isEmpty_formEmail){
+				errorMsg = "email is empty"
+			} else if (isEmpty_formPassword){
+				errorMsg = "password is empty"
+			} else if (isEmpty_formPasswordConfirm){
+				errorMsg = "password repeat is empty"
+			} else if incorrectFormat_formEmail {
 				errorMsg = "You have to enter a valid email address"
-			} else if len(r.FormValue("password")) == 0 {
-				errorMsg = "You have to enter a password"
-			} else if r.FormValue("password") != r.FormValue("password2") {
-				errorMsg = "The passwords do not match"
-			} else if user, _ := GetUserByUsername(r.FormValue("username"), db); user.Username == r.FormValue("username") {
-				errorMsg = "This username is already taken"
+			} else if (formPassword != formPasswordConfirm){
+				//Passwords does not match
+				errorMsg = "password and repeated password does not match"
+			} else if usernameTaken{
+				//Username is already taken
+				errorMsg = "username already exist"
+
 			} else {
-				pass := r.FormValue("password")
-				hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
+				//Sign up user
+				hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
 
 				if err != nil {
 					log.Println(err)
@@ -126,20 +156,37 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				}
 
 				user := User{
-					Username: r.FormValue("username"),
-					Email:    r.FormValue("email"),
+					Username: formUsername,
+					Email:    formEmail,
 					PwHash:   string(hash),
 				}
 
 				db.Create(&user)
-				http.Redirect(w, r, "/login", http.StatusCreated)
-				// TODO return successful registration status
+				//renders sign in page again with error
+				viewContent := ViewContent{
+					Success: true,
+					SuccessMessage: "User successfully created",
+				}
+
+				if err := templates["login"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+			if errorMsg != "" {
+				//renders register page again with error
+				viewContent := ViewContent{
+					Error: true,
+					ErrorMessage: errorMsg,
+				}
+
+				if err := templates["register"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
 			}
 		}
 
-		response := map[string]string{"error": errorMsg}
-		log.Println(response)
-		// TODO render register template with error
+
 	})
 }
 
