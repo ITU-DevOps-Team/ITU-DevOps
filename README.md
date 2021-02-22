@@ -12,12 +12,17 @@ Course repository
 ## Installing the depencies
 
 ```bash
+  // ui app
   go get ./itu-minitwit-go/
+
+  // api
+  go get ./itu-minitwit-api/
 ```
 
 ## Running the server
 
 ```bash
+  # ui app
   # build the executable
   go build ./itu-minitwit-go -o minitwit
 
@@ -25,10 +30,23 @@ Course repository
   ./minitwit
 ```
 
+```bash
+  # api
+  # build the executable
+  go build ./itu-minitwit-api -o minitwit-api
+
+  # running the executable
+  ./minitwit-api
+```
+
 ## Creating a Docker image
 
 ```bash
+  # ui app
   docker build -t minitwit:latest -f .deploy/itu-minitwit-go/Dockerfile .
+
+  # api
+  docker build -t minitwit-api:latest -f .deploy/itu-minitwit-api/Dockerfile .
 ```
 
 ## Running Docker containers with `docker-compose`
@@ -39,4 +57,7 @@ Course repository
 
   # intialise minitwit service
   docker-compose up minitwit
+
+  # intialise minitwit-api service
+  docker-compose up minitwit-api
 ```
