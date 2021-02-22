@@ -185,14 +185,25 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				}
 			}
 		}
-
-
 	})
 }
 
-func HomeHandler() http.Handler {
+func HomeHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to itu-minitwit"))
+		session, _ := store.Get(r, "session_cookie")
+
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+
+		posts := GetPublicPosts(10, db)
+
+		viewContent := ViewContent{
+			SignedIn: isLoggedIn,
+			Posts: posts,
+		}
+		if err := templates["public_timeline"].Execute(w, viewContent); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 }
 

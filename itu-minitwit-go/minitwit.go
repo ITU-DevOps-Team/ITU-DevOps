@@ -39,7 +39,8 @@ func main() {
 	//CSS
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
 
-	r.Handle("/", HomeHandler()).Methods("GET")
+	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
+	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	// r.Handle("/public", TestHandler(sql)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")
