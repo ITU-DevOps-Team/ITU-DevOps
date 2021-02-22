@@ -107,9 +107,9 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 				Scan(&queryData)
 
 			type filteredMessage struct {
-				Content string
-				PubDate int
-				User    string
+				Content string `json:"content"`
+				PubDate int `json:"pub_date"`
+				User string `json:"user"`
 			}
 
 			filteredMessages := []filteredMessage{}
@@ -171,9 +171,9 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 				Scan(&queryData)
 
 			type filteredMessage struct {
-				Content string
-				PubDate int
-				User    string
+				Content string `json:"content"`
+				PubDate int `json:"pub_date"`
+				User string `json:"user"`
 			}
 
 			filteredMessages := []filteredMessage{}
@@ -287,7 +287,7 @@ func FollowHandler(db *gorm.DB) http.Handler {
 				Username string
 			}
 
-			followers := []result{}
+			followers := []string{}
 
 			db.Table("users").
 				Select("users.username").
@@ -297,7 +297,7 @@ func FollowHandler(db *gorm.DB) http.Handler {
 				Scan(&followers)
 
 			type response struct {
-				Follows []result `json:"follows"`
+				Follows []string `json:"follows"`
 			}
 			followersResponse := response{Follows: followers}
 			json.NewEncoder(w).Encode(&followersResponse)
