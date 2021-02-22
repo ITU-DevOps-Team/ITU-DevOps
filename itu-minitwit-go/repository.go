@@ -23,9 +23,25 @@ func GetPublicPosts(numberOfPosts int, db *gorm.DB) []ViewPost {
 		"flagged = ?", 0).Limit(numberOfPosts).Order(
 		"pub_date desc").Find(&posts)
 
+	return ConvertMessagesToViewPosts(posts, db)
+}
+
+func GetPostsByUser(username string, db *gorm.DB) []ViewPost{
+	var posts []Message
+	db.Table(
+		"messages").Order(
+		"messages.pub_date desc").Select(
+		"users.username, messages.message_id, messages.author_id, messages.text, messages.pub_date, messages.flagged").Joins(
+		"join users on users.user_id = messages.author_id").Where(
+		"messages.flagged = 0 AND users.username = ?", username).Scan(&posts)
+	
+	return ConvertMessagesToViewPosts(posts, db)
+}
+
+func ConvertMessagesToViewPosts(messages []Message, db *gorm.DB) []ViewPost{
 	var postSlice []ViewPost
 
-	for _, message := range posts {
+	for _, message := range messages {
 		user, _ := GetUserById(message.Author_id, db)
 
 		post := ViewPost{
@@ -38,16 +54,6 @@ func GetPublicPosts(numberOfPosts int, db *gorm.DB) []ViewPost {
 		}
 		postSlice = append(postSlice, post)
 	}
-	return postSlice
-}
 
-func GetPostsByUser(username string, db *gorm.DB) []ViewPost{
-	var posts []ViewPost
-	db.Table(
-		"messages").Order(
-		"messages.pub_date desc").Select(
-		"users.username, messages.message_id, messages.author_id, messages.text, messages.pub_date, messages.flagged").Joins(
-		"join users on users.user_id = messages.author_id").Where(
-		"messages.flagged = 0 AND users.username = ?", username).Scan(&posts)
-	return posts
+	return postSlice
 }
