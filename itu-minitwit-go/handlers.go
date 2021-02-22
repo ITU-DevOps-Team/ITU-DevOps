@@ -323,3 +323,130 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 		http.Redirect(w, r, "/", http.StatusFound)
 	})
 }
+
+func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+		currentUserName := "" //username of the current user signed in
+
+		//redirect to public if not logged in
+		if !isLoggedIn {
+			http.Redirect(w, r, "/", 302)
+		}
+
+		user, err := GetUserById(userId.(uint), db)
+		checkErr(err)
+		currentUserName = user.Username
+
+		if r.Method == "GET" {
+			viewContent := ViewContent{
+				SignedIn: isLoggedIn,
+				SameUser: true, //must be
+				Posts:    GetPostsByUser(currentUserName, db),
+				Username: currentUserName,
+			}
+
+			if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else if r.Method == "POST" {
+			r.ParseForm()
+			var errorMsg string
+			formText := r.FormValue("text")
+			isEmpty_formText := formText == ""
+
+			if (isEmpty_formText) {
+				errorMsg = "post is empty"
+			} else {
+
+				if userId == nil {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				if formText != "" {
+					message := Message{
+						Author_id: userId.(uint),
+						Text: formText,
+						Pub_date: int(time.Now().Unix()),
+						Flagged: 0,
+					}
+					result := db.Create(&message)
+
+					if result.Error != nil {
+						log.Fatal(result.Error)
+					}
+				}
+
+				viewContent := ViewContent{
+					SignedIn: isLoggedIn,
+					SameUser: true, //must be
+					Posts:    GetPostsByUser(currentUserName, db),
+					Username: currentUserName,
+					Success:        true,
+					SuccessMessage: "Post successfully created",
+				}
+
+				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+			if errorMsg != ""{
+				//display error
+				viewContent := ViewContent{
+					Error:        true,
+					ErrorMessage: errorMsg,
+				}
+
+				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+
+		}
+	})
+}
+
+func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session_cookie")
+		userId := session.Values["user_id"]
+		isLoggedIn := userId != "" && userId != nil
+		currentUserName := "" //username of the current user signed in
+
+		if isLoggedIn{
+			user, err := GetUserById(userId.(uint), db)
+			checkErr(err)
+			currentUserName = user.Username
+		}
+
+		vars := mux.Vars(r)
+		usernameVisited := vars["username"]
+
+		//check if username visited exists
+		if !CheckUsernameExists(usernameVisited, db){
+			http.Redirect(w, r, "/", 302)
+		}
+
+		//if visited user is same as logged in user redirect to personal timeline
+		if currentUserName == usernameVisited{
+			PersonalTimeline(store, db)
+		}
+		fmt.Println("hey")
+
+		viewContent := ViewContent{
+			SignedIn: isLoggedIn,
+			SameUser: currentUserName == usernameVisited,
+			Posts: GetPostsByUser(usernameVisited, db),
+			Username: usernameVisited,
+		}
+
+
+		if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+}

@@ -169,8 +169,18 @@ ul.flashes li {
 
 div.error {
     margin: 10px 0;
-    background: #FAE4E4;
+    background: #DD6F6F;
     border: 1px solid #DD6F6F;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+div.success {
+    margin: 10px 0;
+    background: #90dd6f;
+    border: 1px solid #90dd6f;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     padding: 4px;

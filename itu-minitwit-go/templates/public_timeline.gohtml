@@ -11,8 +11,12 @@
                     <strong>
                         <a href="/{{.Username}}">{{ .Username}}</a>
                     </strong>
-                    {{ .Text }}
-                    <small>{{ .Pub_date }}</small>
+                    <p>
+                        {{ .Text }}
+                    </p>
+                    <small>
+                        {{ .Pub_date }}
+                    </small>
                 </p>
             </li>
         {{ end }}
