@@ -255,7 +255,7 @@ func FollowHandler(db *gorm.DB) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		} else if r.Method == "POST" && requestBody.Unfollow != "" {
-			userToUnfollow, err := GetUserByUsername(requestBody.Follow, db)
+			userToUnfollow, err := GetUserByUsername(requestBody.Unfollow, db)
 			if err != nil {
 				http.Error(w, "User not found", http.StatusNotFound)
 				return
@@ -289,7 +289,8 @@ func FollowHandler(db *gorm.DB) http.Handler {
 
 			followers := []result{}
 
-			db.Select("users.username").
+			db.Table("users").
+				Select("users.username").
 				Joins("JOIN followers ON followers.whom_id = users.user_id").
 				Where("followers.who_id = ?", user.UserID).
 				Limit(numberOfFollowers).
