@@ -223,7 +223,85 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 
 func FollowHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		username := mux.Vars(r)["username"]
+		user, err := GetUserByUsername(username, db)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+
+		type body struct {
+			Follow   string `json:"follow"`
+			Unfollow string `json:"unfollow"`
+		}
+		var requestBody body
+		json.NewDecoder(r.Body).Decode(&requestBody)
+		if r.Method == "POST" && requestBody.Follow != "" {
+			userToFollow, err := GetUserByUsername(requestBody.Follow, db)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusNotFound)
+				return
+			}
+
+			follower := Follower{
+				WhoID:  user.UserID,
+				WhomID: userToFollow.UserID,
+			}
+			result := db.Create(&follower)
+			if result.Error != nil {
+				log.Fatal("Something went wrong when following")
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+			return
+		} else if r.Method == "POST" && requestBody.Unfollow != "" {
+			userToUnfollow, err := GetUserByUsername(requestBody.Follow, db)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusNotFound)
+				return
+			}
+
+			follower := Follower{
+				WhoID:  user.UserID,
+				WhomID: userToUnfollow.UserID,
+			}
+			result := db.Where("who_id = ? and whom_id = ?", follower.WhoID, follower.WhomID).Delete(&follower)
+			if result.Error != nil {
+				log.Fatal("Something when wrong when unfollowing")
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+			return
+		} else if r.Method == "GET" {
+			numberOfFollowersHeaderResult := r.URL.Query().Get("no")
+			//default set to 100
+			numberOfFollowers := 100
+			if numberOfFollowersHeaderResult != "" {
+				parsed, err := strconv.Atoi(numberOfFollowersHeaderResult)
+				if err == nil {
+					numberOfFollowers = parsed
+				}
+			}
+
+			type result struct {
+				Username string
+			}
+
+			followers := []result{}
+
+			db.Select("users.username").
+				Joins("JOIN followers ON followers.whom_id = users.user_id").
+				Where("followers.who_id = ?", user.UserID).
+				Limit(numberOfFollowers).
+				Scan(&followers)
+
+			type response struct {
+				Follows []result `json:"follows"`
+			}
+			followersResponse := response{Follows: followers}
+			json.NewEncoder(w).Encode(&followersResponse)
+			return
+		}
 	})
 }
 
