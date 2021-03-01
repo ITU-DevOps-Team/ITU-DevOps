@@ -1,5 +1,7 @@
 # ITU-DevOps
 
+https://travis-ci.org/ITU-DevOps-Team/ITU-DevOps.svg?branch=development
+
 Course repository
 
 ## Requirements
