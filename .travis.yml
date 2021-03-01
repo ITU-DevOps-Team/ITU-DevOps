@@ -18,4 +18,5 @@ before_install:
 
 script:
  - docker build -t ${BUILD_NAME} . -f ${DOCKERFILE}
+ - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
  - docker push ${BUILD_NAME}
