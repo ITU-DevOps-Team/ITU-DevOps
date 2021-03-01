@@ -16,4 +16,5 @@ env:
 script:
  - docker build -t ${BUILD_NAME} . -f ${DOCKERFILE}
  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
- - docker push itudevopsteam/${BUILD_NAME}
+ - docker tag ${BUILD_NAME} jonaswg/${BUILD_NAME}
+ - docker push jonaswg/${BUILD_NAME}
