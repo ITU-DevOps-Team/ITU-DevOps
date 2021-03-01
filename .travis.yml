@@ -13,8 +13,22 @@ env:
     - DOCKERFILE=.deploy/itu-minitwit-go/Dockerfile
       BUILD_NAME=minitwit:latest
 
-script:
- - docker build -t ${BUILD_NAME} . -f ${DOCKERFILE}
- - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
- - docker tag ${BUILD_NAME} jonaswg/${BUILD_NAME}
- - docker push jonaswg/${BUILD_NAME}
+jobs:
+  include:
+    - stage: docker_build
+      name: "build and push docker"      
+      script:
+       - docker build -t ${BUILD_NAME} . -f ${DOCKERFILE}
+       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+       - docker tag ${BUILD_NAME} jonaswg/${BUILD_NAME}
+       - docker push jonaswg/${BUILD_NAME}
+
+    - stage: deploy
+      name: "deploy new version"
+      install: skip
+      script:
+       - ssh -o "StrictHostKeyChecking no" ${MT_USER}@{MT_SERVER}
+       - source /root/.bash_profile
+       - cd /vagrant
+       - docker-compose pull
+       - docker-compose up -d
