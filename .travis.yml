@@ -8,9 +8,9 @@ services:
 
 env:
   matrix:
-    - DOCKERFILE=.deploy/itu-minitwit-api/Dockerfile
+    - DOCKERFILE=minitwit-api
       BUILD_NAME=minitwit-api:latest
-    - DOCKERFILE=.deploy/itu-minitwit-go/Dockerfile
+    - DOCKERFILE=minitwit
       BUILD_NAME=minitwit:latest
 
 
