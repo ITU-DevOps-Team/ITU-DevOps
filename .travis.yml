@@ -8,15 +8,14 @@ services:
 
 env:
   matrix:
-    - DOCKERFILE=minitwit-api
+    - DOCKERFILE=.deploy/itu-minitwit-api/Dockerfile
       BUILD_NAME=minitwit-api:latest
-    - DOCKERFILE=minitwit
+    - DOCKERFILE=.deploy/itu-minitwit-go/Dockerfile
       BUILD_NAME=minitwit:latest
-
 
 before_install:
  - docker compose up
 
 script:
- - docker compose up ${DOCKERFILE}
+ - docker build -t ${BUILD_NAME} -f ${DOCKERFILE}
  - docker push ${BUILD_NAME}
