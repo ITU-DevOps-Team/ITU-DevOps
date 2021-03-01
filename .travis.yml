@@ -17,5 +17,5 @@ before_install:
  - docker compose up
 
 script:
- - docker build -t ${BUILD_NAME} -f ${DOCKERFILE}
+ - docker build -t ${BUILD_NAME} . -f ${DOCKERFILE}
  - docker push ${BUILD_NAME}
