@@ -13,6 +13,10 @@ env:
     - DOCKERFILE=.deploy/itu-minitwit-go/Dockerfile
       BUILD_NAME=minitwit:latest
 
+stages:
+  - docker_build
+  - deploy
+
 jobs:
   include:
     - stage: docker_build
