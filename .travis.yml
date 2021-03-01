@@ -3,4 +3,18 @@ language: go
 go:
  - 1.13.x
 
+services:
+ - docker
+
+env:
+  matrix:
+    - DOCKERFILE=.deploy/itu-minitwit-api/Dockerfile
+    - DOCKERFILE=.deploy/itu-minitwit-go/Dockerfile
+
+
+before_install:
+ - docker compose up
+
+script:
+ - docker compose up ${DOCKERFILE}
 
