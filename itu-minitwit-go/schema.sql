@@ -20,3 +20,8 @@ create table messages (
   pub_date integer,
   flagged integer
 );
+
+drop tabel if exists latest;
+create table latest (
+  latest integer not null default 0,
+);
