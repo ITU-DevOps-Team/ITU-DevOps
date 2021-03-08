@@ -23,6 +23,7 @@ jobs:
     - stage: before_build
       name: "preparation step"
       script:
+       - echo "test"
        - openssl aes-256-cbc -K $encrypted_56635d5d55b3_key -iv $encrypted_56635d5d55b3_iv -in do_ssh_key.enc -out /tmp/git_deploy_key -d
        - chmod 600 /tmp/git_deploy_key
        - echo 'echo ${SSH_PASSPHRASE}' > /tmp/askpass && chmod +x /tmp/askpass
