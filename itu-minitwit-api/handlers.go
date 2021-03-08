@@ -50,6 +50,8 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 				Status:    http.StatusBadRequest,
 				Error_msg: error_msg,
 			}
+
+			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(&e)
 			return
 		}
@@ -68,6 +70,8 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 			Status:    http.StatusNoContent,
 			Error_msg: "",
 		}
+
+		w.WriteHeader(http.StatusNoContent)
 		json.NewEncoder(w).Encode(&e)
 	})
 }
@@ -108,8 +112,8 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 
 			type filteredMessage struct {
 				Content string `json:"content"`
-				PubDate int `json:"pub_date"`
-				User string `json:"user"`
+				PubDate int    `json:"pub_date"`
+				User    string `json:"user"`
 			}
 
 			filteredMessages := []filteredMessage{}
@@ -172,8 +176,8 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 
 			type filteredMessage struct {
 				Content string `json:"content"`
-				PubDate int `json:"pub_date"`
-				User string `json:"user"`
+				PubDate int    `json:"pub_date"`
+				User    string `json:"user"`
 			}
 
 			filteredMessages := []filteredMessage{}
