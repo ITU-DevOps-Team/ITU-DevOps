@@ -69,6 +69,7 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 			Error_msg: "",
 		}
 		json.NewEncoder(w).Encode(&e)
+		w.WriteHeader(http.NoContent)
 	})
 }
 
