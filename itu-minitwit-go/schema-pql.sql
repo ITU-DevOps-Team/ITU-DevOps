@@ -21,7 +21,7 @@ create table messages (
   flagged integer
 );
 
-drop table if exists latest;
-create table latest (
+drop table if exists latests;
+create table latests (
   latest integer not null default 0
 );

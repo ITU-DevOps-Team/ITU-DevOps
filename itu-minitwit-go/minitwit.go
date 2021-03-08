@@ -1,18 +1,20 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-	_ "github.com/mattn/go-sqlite3"
-	"gorm.io/driver/sqlite"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func initDb(driver string, datasource string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(datasource), &gorm.Config{})
+func initDb(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	sql, _ := db.DB()
 
 	if err != nil {
@@ -22,21 +24,59 @@ func initDb(driver string, datasource string) (*gorm.DB, error) {
 	return db, sql.Ping()
 }
 
+func ReadDVariables() (string, error) {
+	var err error
+
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		err = errors.New("env var missing (DB_NAME)")
+	}
+
+	dbUser := os.Getenv("DB_USER")
+	if dbUser == "" {
+		err = errors.New("env var missing (DB_USER)")
+	}
+
+	dbPass := os.Getenv("DB_PASS")
+	if dbPass == "" {
+		err = errors.New("env var missing (DB_PASS)")
+	}
+
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		err = errors.New("env var missing (DB_HOST)")
+	}
+
+	dbPort := os.Getenv("DB_PORT")
+	if dbPort == "" {
+		err = errors.New("env var missing (DB_PORT)")
+	}
+
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
+}
+
 func main() {
-	gorm, err := initDb(DRIVER, DATABASE)
-	// sql, _ := gorm.DB()
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Println("Failed to read .env file")
+		log.Println("Getting environment variables from env instead...")
+	}
+
+	dsn, err := ReadDVariables()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gorm, err := initDb(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	LoadTemplates()
-
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
-
-	//CSS
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
 
 	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
@@ -48,7 +88,6 @@ func main() {
 	r.Handle("/{username}", UserTimeline(store, gorm)).Methods("GET")
 	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
 	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")
-	// r.Handle("/user/{id}", GetUserByIdHandler(gorm)).Methods("GET")
 
 	http.ListenAndServe(":8080", r)
 }
