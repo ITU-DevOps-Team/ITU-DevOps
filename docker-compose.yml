@@ -6,10 +6,10 @@ services:
     build:
       context: .
       dockerfile: .deploy/itu-minitwit-go/Dockerfile
-    # env_file:
-    #   - .env
-    # environment:
-    #   DB_HOST: database
+    env_file:
+      - .env
+    environment:
+      DB_HOST: database
     restart: on-failure
     depends_on: 
       - database
@@ -21,10 +21,10 @@ services:
     build:
       context: .
       dockerfile: .deploy/itu-minitwit-api/Dockerfile
-    # env_file:
-    #   - .env
-    # environment:
-    #   DB_HOST: database
+    env_file:
+      - .env
+    environment:
+      DB_HOST: database
     restart: on-failure
     depends_on: 
       - database
