@@ -1,7 +1,6 @@
-ceate sequence user_id_seq;
 drop table if exists users;
 create table users (
-  user_id primary key not null default nextval('user_id_seq'),
+  user_id serial primary key,
   username varchar(256) not null,
   email varchar(256) not null,
   pw_hash varchar(256) not null
@@ -13,10 +12,9 @@ create table followers (
   whom_id integer
 );
 
-create sequence message_id_seq;
 drop table if exists messages;
 create table messages (
-  message_id primary key not null default nextval('message_id_seq'),
+  message_id serial primary key,
   author_id integer not null,
   text varchar(256) not null,
   pub_date integer,
