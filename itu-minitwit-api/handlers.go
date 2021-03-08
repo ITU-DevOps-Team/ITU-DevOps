@@ -209,7 +209,7 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 
 			result := db.Create(&message)
 			if result.Error != nil {
-				log.Fatal(result.Error)
+				log.Println(result.Error)
 			}
 
 			w.WriteHeader(http.StatusNoContent)
