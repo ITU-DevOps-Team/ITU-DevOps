@@ -73,7 +73,6 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 
 		w.WriteHeader(http.StatusNoContent)
 		json.NewEncoder(w).Encode(&e)
-		w.WriteHeader(http.StatusNoContent)
 	})
 }
 
