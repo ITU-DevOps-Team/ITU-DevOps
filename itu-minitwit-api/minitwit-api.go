@@ -87,5 +87,5 @@ func main() {
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(gorm)).Methods("GET", "POST")
 	r.Handle("/fllws/{username}", FollowHandler(gorm)).Methods("GET", "POST")
 
-	log.Fatal(http.ListenAndServe("localhost:8080", r))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
