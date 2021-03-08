@@ -19,10 +19,6 @@ const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
 
-var Latest_ = Latest{
-	Latest: 0,
-}
-
 func initDb(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	sql, _ := db.DB()
@@ -66,7 +62,7 @@ func ReadDVariables() (string, error) {
 }
 
 func main() {
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Println("Failed to read .env file")
 		log.Println("Getting environment variables from env instead...")
@@ -76,7 +72,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(dsn)
 
 	gorm, err := initDb(dsn)
 	if err != nil {
@@ -84,13 +79,13 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.Use(LatestMiddleware())
+	r.Use(LatestMiddleware(gorm))
 	r.Use(AuthenticationMiddleware())
-	r.Handle("/latest", LatestHandler()).Methods("GET")
+	r.Handle("/latest", LatestHandler(gorm)).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(gorm)).Methods("GET")
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(gorm)).Methods("GET", "POST")
 	r.Handle("/fllws/{username}", FollowHandler(gorm)).Methods("GET", "POST")
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe("localhost:8080", r))
 }
