@@ -50,6 +50,8 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 				Status:    http.StatusBadRequest,
 				Error_msg: error_msg,
 			}
+
+			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(&e)
 			return
 		}
@@ -68,8 +70,9 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 			Status:    http.StatusNoContent,
 			Error_msg: "",
 		}
-		json.NewEncoder(w).Encode(&e)
+
 		w.WriteHeader(http.StatusNoContent)
+		json.NewEncoder(w).Encode(&e)
 	})
 }
 
