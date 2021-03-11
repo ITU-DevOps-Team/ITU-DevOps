@@ -9,6 +9,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func initDb(driver string, datasource string) (*gorm.DB, error) {
@@ -22,12 +24,22 @@ func initDb(driver string, datasource string) (*gorm.DB, error) {
 	return db, sql.Ping()
 }
 
+
+
+
+func init() {
+	prometheus.MustRegister(minitwit_http_responses_total)
+}
+
 func main() {
+
+
 	gorm, err := initDb(DRIVER, DATABASE)
 	// sql, _ := gorm.DB()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 
 	LoadTemplates()
 
@@ -45,9 +57,12 @@ func main() {
 	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
 	r.Handle("/personaltimeline", PersonalTimeline(store, gorm)).Methods("GET", "POST")
+	r.Handle("/metrics",promhttp.Handler())
 	r.Handle("/{username}", UserTimeline(store, gorm)).Methods("GET")
 	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
 	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")
+
+
 	// r.Handle("/user/{id}", GetUserByIdHandler(gorm)).Methods("GET")
 
 	http.ListenAndServe(":8080", r)

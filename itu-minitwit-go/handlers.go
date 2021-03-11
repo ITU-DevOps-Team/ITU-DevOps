@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"github.com/prometheus/client_golang/prometheus"
+	// "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const DRIVER = "sqlite3"
@@ -19,6 +21,15 @@ const DATABASE = "../db_backup/minitwit.db"
 const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
+
+//Prometheus metrics
+var (
+	minitwit_http_responses_total = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_http_responses_total",
+		Help:        "The count of HTTP responses sent.",
+	})
+)
+
 
 var templates map[string]*template.Template
 
@@ -231,8 +242,13 @@ func AddMessageHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 }
 
 func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http.Handler) http.Handler {
+
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
+
+			//Increment number of sent http requests
+			minitwit_http_responses_total.Inc()
+
 			session, _ := store.Get(r, "session_cookie")
 			userId := session.Values["user_id"]
 			if userId != nil {
