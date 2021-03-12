@@ -13,14 +13,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func LatestHandler() http.Handler {
+func LatestHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		latestObj := Latest{
-			Latest: Latest_.Latest,
-		}
-
+		latestObj, _ := GetLatest(db)
 		json.NewEncoder(w).Encode(&latestObj)
-
 	})
 }
 
@@ -217,7 +213,7 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 
 			result := db.Create(&message)
 			if result.Error != nil {
-				log.Fatal(result.Error)
+				log.Println(result.Error)
 			}
 
 			w.WriteHeader(http.StatusNoContent)
@@ -331,7 +327,7 @@ func AuthenticationMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
-func LatestMiddleware() func(http.Handler) http.Handler {
+func LatestMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 			keys, ok := r.URL.Query()["latest"]
@@ -339,11 +335,15 @@ func LatestMiddleware() func(http.Handler) http.Handler {
 			if !ok || len(keys[0]) < 1 {
 				log.Println("Request does not contain a new latest value")
 			} else {
-				Latest_.Latest, _ = strconv.Atoi(keys[0])
-				log.Println(Latest_.Latest)
+				latest, _ := strconv.Atoi(keys[0])
+				latestObj := Latest{latest}
+				AddLatest(latestObj, db)
+				log.Println(latest)
 			}
+
 			next.ServeHTTP(w, r)
 		}
+
 		return http.HandlerFunc(mdfn)
 	}
 }
