@@ -12,6 +12,8 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func initDb(dsn string) (*gorm.DB, error) {
@@ -53,7 +55,13 @@ func ReadDVariables() (string, error) {
 		err = errors.New("env var missing (DB_PORT)")
 	}
 
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require", dbHost, dbUser, dbPass, dbName, dbPort), err
+return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
+}
+
+
+//Initialize prometheus
+func init() {
+	prometheus.MustRegister(minitwit_ui_http_requests)
 }
 
 func main() {
@@ -86,6 +94,7 @@ func main() {
 	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
 	r.Handle("/personaltimeline", PersonalTimeline(store, gorm)).Methods("GET", "POST")
+	r.Handle("/metrics",promhttp.Handler())
 	r.Handle("/{username}", UserTimeline(store, gorm)).Methods("GET")
 	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
 	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")

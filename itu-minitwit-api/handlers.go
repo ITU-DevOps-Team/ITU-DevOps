@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
+
 func LatestHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		latestObj, _ := GetLatest(db)
