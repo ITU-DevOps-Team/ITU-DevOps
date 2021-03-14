@@ -30,7 +30,7 @@ func initDb(dsn string) (*gorm.DB, error) {
 	return db, sql.Ping()
 }
 
-func ReadDVariables() (string, error) {
+func ReadDBVariables() (string, error) {
 	var err error
 
 	dbName := os.Getenv("DB_NAME")
@@ -68,7 +68,7 @@ func main() {
 		log.Println("Getting environment variables from env instead...")
 	}
 
-	dsn, err := ReadDVariables()
+	dsn, err := ReadDBVariables()
 	if err != nil {
 		log.Fatal(err)
 	}
