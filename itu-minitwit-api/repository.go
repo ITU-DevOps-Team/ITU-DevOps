@@ -4,6 +4,17 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetLatest(db *gorm.DB) (Latest, error) {
+	latest := Latest{}
+	result := db.Last(&latest)
+	return latest, result.Error
+}
+
+func AddLatest(latest Latest, db *gorm.DB) error {
+	result := db.Create(&latest)
+	return result.Error
+}
+
 //GetUserByUsername ...
 func GetUserByUsername(username string, db *gorm.DB) (User, error) {
 	user := User{}
