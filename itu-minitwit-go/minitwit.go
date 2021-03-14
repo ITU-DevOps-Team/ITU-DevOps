@@ -55,7 +55,13 @@ func ReadDVariables() (string, error) {
 		err = errors.New("env var missing (DB_PORT)")
 	}
 
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require", dbHost, dbUser, dbPass, dbName, dbPort), err
+return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
+}
+
+
+//Initialize prometheus
+func init() {
+	prometheus.MustRegister(minitwit_ui_http_requests)
 }
 
 func main() {

@@ -24,9 +24,9 @@ const SECRET_KEY = "development key"
 
 //Prometheus metrics
 var (
-	minitwit_http_responses_total = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_http_responses_total",
-		Help:        "The count of HTTP responses sent.",
+	minitwit_ui_http_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_http_requests_total",
+		Help:        "The count of HTTP requests to the frontend API.",
 	})
 )
 
@@ -246,8 +246,8 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 
-			//Increment number of sent http requests
-			minitwit_http_responses_total.Inc()
+			//Increment number of http requests in Prometheus
+			minitwit_ui_http_requests.Inc()
 
 			session, _ := store.Get(r, "session_cookie")
 			userId := session.Values["user_id"]
