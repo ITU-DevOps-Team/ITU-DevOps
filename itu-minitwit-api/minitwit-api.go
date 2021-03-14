@@ -58,7 +58,12 @@ func ReadDBVariables() (string, error) {
 		err = errors.New("env var missing (DB_PORT)")
 	}
 
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
+	sslMode := os.Getenv("DB_SSLMODE")
+	if dbPort == "" {
+		err = errors.New("env var missing (DB_SSLMODE)")
+	}
+
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbPort, sslMode), err
 }
 
 func main() {
@@ -69,6 +74,7 @@ func main() {
 	}
 
 	dsn, err := ReadDBVariables()
+	fmt.Println(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
