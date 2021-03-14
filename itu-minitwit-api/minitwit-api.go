@@ -61,9 +61,6 @@ func ReadDVariables() (string, error) {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
 }
 
-
-
-
 func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
