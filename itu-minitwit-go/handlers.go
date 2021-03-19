@@ -13,7 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"github.com/prometheus/client_golang/prometheus"
-	// "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const DRIVER = "sqlite3"
@@ -22,10 +21,46 @@ const PER_PAGE = 30
 const DEBUG = true
 const SECRET_KEY = "development key"
 
-//Prometheus metrics
+// Prometheus metrics
 var (
-	minitwit_ui_http_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_http_requests_total",
+	minitwit_ui_usertimeline_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_usertimeline_requests",
+		Help:        "The count of HTTP requests to the /{username} endpoint of the frontend API.",
+	})
+	minitwit_ui_personaltimeline_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_personaltimeline_requests",
+		Help:        "The count of HTTP requests to the /personaltimeline endpoint of the frontend API.",
+	})
+	minitwit_ui_unfollow_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_unfollow_requests",
+		Help:        "The count of HTTP requests to the /{username}/unfollow endpoint of the frontend API.",
+	})
+	minitwit_ui_follow_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_follow_requests",
+		Help:        "The count of HTTP requests to the /{username}/follow endpoint of the frontend API.",
+	})
+	minitwit_ui_addmessage_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_addmessage_requests",
+		Help:        "The count of HTTP requests to the /add_message endpoint of the frontend API.",
+	})
+	minitwit_ui_homepage_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_homepage_requests",
+		Help:        "The count of HTTP requests to the / (home) endpoint of the frontend API.",
+	})
+	minitwit_ui_register_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_register_requests",
+		Help:        "The count of HTTP requests to the /register endpoint of the frontend API.",
+	})
+	minitwit_ui_login_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_login_requests",
+		Help:        "The count of HTTP requests to the /login endpoint of the frontend API.",
+	})
+	minitwit_ui_logout_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_logout_requests",
+		Help:        "The count of HTTP requests to the /logout endpoint of the frontend API.",
+	})
+	minitwit_ui_total_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_ui_total_requests",
 		Help:        "The count of HTTP requests to the frontend API.",
 	})
 )
@@ -46,6 +81,7 @@ func LoadTemplates() {
 //LoginHandler ...
 func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		minitwit_ui_login_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 
 		userId := session.Values["user_id"]
@@ -93,6 +129,7 @@ func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		minitwit_ui_logout_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 		session.Values["user_id"] = nil
 		session.AddFlash("You were logged out")
@@ -109,6 +146,7 @@ func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		minitwit_ui_register_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
 		isLoggedIn := userId != "" && userId != nil
@@ -201,6 +239,7 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 func HomeHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		minitwit_ui_homepage_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 
 		userId := session.Values["user_id"]
@@ -220,6 +259,8 @@ func HomeHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 func AddMessageHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_ui_addmessage_requests.Inc()
 
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
@@ -247,7 +288,7 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 
 			//Increment number of http requests in Prometheus
-			minitwit_ui_http_requests.Inc()
+			minitwit_ui_total_requests.Inc()
 
 			session, _ := store.Get(r, "session_cookie")
 			userId := session.Values["user_id"]
@@ -275,6 +316,8 @@ func BeforeRequestMiddleware(store *sessions.CookieStore, db *gorm.DB) func(http
 
 func FollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_ui_follow_requests.Inc()
 
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
@@ -310,6 +353,8 @@ func FollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		minitwit_ui_unfollow_requests.Inc()
+
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
 		if userId == nil {
@@ -342,6 +387,9 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 
 func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_ui_personaltimeline_requests.Inc()
+
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
 		isLoggedIn := userId != "" && userId != nil
@@ -428,6 +476,9 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_ui_usertimeline_requests.Inc()
+
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
 		isLoggedIn := userId != "" && userId != nil

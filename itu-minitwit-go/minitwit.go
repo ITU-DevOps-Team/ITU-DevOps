@@ -61,8 +61,19 @@ return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disabl
 
 //Initialize prometheus
 func init() {
-	prometheus.MustRegister(minitwit_ui_http_requests)
+	prometheus.MustRegister(minitwit_ui_total_requests)
+	prometheus.MustRegister(minitwit_ui_login_requests)
+	prometheus.MustRegister(minitwit_ui_logout_requests)
+	prometheus.MustRegister(minitwit_ui_register_requests)
+	prometheus.MustRegister(minitwit_ui_homepage_requests)
+	prometheus.MustRegister(minitwit_ui_addmessage_requests)
+	prometheus.MustRegister(minitwit_ui_follow_requests)
+	prometheus.MustRegister(minitwit_ui_unfollow_requests)
+	prometheus.MustRegister(minitwit_ui_personaltimeline_requests)
+	prometheus.MustRegister(minitwit_ui_usertimeline_requests)
 }
+
+
 
 func main() {
 	err := godotenv.Load("../.env")
