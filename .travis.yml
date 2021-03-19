@@ -6,6 +6,15 @@ go:
 services:
  - docker
 
+addons:
+  sonarcloud:
+    organization: "itu-devops-team" # the key of the org you chose at step #3
+    token:
+      secure: "n2ptbc0dMv6hlApOLTnGaYapE3Wu0IiYbGbzgZwZoB/Bdt7N3cVjayVwlrbzF38uUzTrFmYXBNnQ/6mZ+MiLIXnnCSi2vwR27/45bhcczX4EqNkf++YE52Ik7JkGSrTcqqfR/TWHZqTYlbkVkS0rorAPDFMhZPtGIRU8KbRzJGIG8U64oIWzaZLUu+MdFlzEqfQkGy1tbF7astin0d/30EWBu+KScNxbGTl9m2Oe3IFKmt2dm7IuJE8CEN7oFm2Vu4K+0Ob5dQyhuXNUwZnNLCHi7UhX0FY2HKviYFtkG251vr7iJJRmTiJiB4qs8U7uY6cpjhVbw7aI6zFjUZMqS621jCWHpK2L9fnqz9r8BPjeddHQ9+3wFwmhCphoWr2ub/pkValqhuX9MC3uuWyQEZ7Vd6Vv93pgNqBzCafNvbrQ9SPJrzherABSsTxypJQSbgcREUWe5ewidv/9BUflvO4cv/Bh1Z2d9/tnn+P3UDINI3H7FyxItxEqkgNail1geBNc79YBuYeW2di2rVQZdDb/zWNkmOD3IlHrbxHeCINSSndqVlUFWTXES/H142gWZmAZ8UpzCN2IyZFRN8jwKq/Tmq6nD8d3Y3fPpYEWPw5nmu6y3TK5pGzNAD75+mDKGaWzlpAhTZa6ewQxm+aRoSPSkQwl2U7XqYtn76MBaTM=" # encrypted value of your token
+script:
+  # other script steps might be done before running the actual analysis
+  - sonar-scanner
+
 env:
   matrix:
     - DOCKERFILE=.deploy/itu-minitwit-api/Dockerfile

@@ -32,7 +32,7 @@ func initDb(dsn string) (*gorm.DB, error) {
 	return db, sql.Ping()
 }
 
-func ReadDVariables() (string, error) {
+func ReadDBVariables() (string, error) {
 	var err error
 
 	dbName := os.Getenv("DB_NAME")
@@ -60,9 +60,13 @@ func ReadDVariables() (string, error) {
 		err = errors.New("env var missing (DB_PORT)")
 	}
 
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
-}
+	sslMode := os.Getenv("DB_SSLMODE")
+	if dbPort == "" {
+		err = errors.New("env var missing (DB_SSLMODE)")
+	}
 
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbPort, sslMode), err
+}
 
 // Initialize prometheus
 func init() {
@@ -73,7 +77,6 @@ func init() {
 	prometheus.MustRegister(minitwit_api_total_requests)
 }
 
-
 func main() {
 
 
@@ -83,7 +86,8 @@ func main() {
 		log.Println("Getting environment variables from env instead...")
 	}
 
-	dsn, err := ReadDVariables()
+	dsn, err := ReadDBVariables()
+	fmt.Println(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -10,10 +10,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 func initDb(dsn string) (*gorm.DB, error) {
@@ -27,7 +27,7 @@ func initDb(dsn string) (*gorm.DB, error) {
 	return db, sql.Ping()
 }
 
-func ReadDVariables() (string, error) {
+func ReadDBVariables() (string, error) {
 	var err error
 
 	dbName := os.Getenv("DB_NAME")
@@ -55,9 +55,13 @@ func ReadDVariables() (string, error) {
 		err = errors.New("env var missing (DB_PORT)")
 	}
 
-return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPass, dbName, dbPort), err
-}
+	sslMode := os.Getenv("DB_SSLMODE")
+	if dbPort == "" {
+		err = errors.New("env var missing (DB_SSLMODE)")
+	}
 
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbPort, sslMode), err
+}
 
 //Initialize prometheus
 func init() {
@@ -82,7 +86,7 @@ func main() {
 		log.Println("Getting environment variables from env instead...")
 	}
 
-	dsn, err := ReadDVariables()
+	dsn, err := ReadDBVariables()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +109,7 @@ func main() {
 	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
 	r.Handle("/personaltimeline", PersonalTimeline(store, gorm)).Methods("GET", "POST")
-	r.Handle("/metrics",promhttp.Handler())
+	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/{username}", UserTimeline(store, gorm)).Methods("GET")
 	r.Handle("/{username}/follow", FollowUserHandler(store, gorm)).Methods("GET")
 	r.Handle("/{username}/unfollow", UnfollowUserHandler(store, gorm)).Methods("GET")

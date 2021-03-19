@@ -11,3 +11,12 @@ The decision to go with Go (pun intended :)) was based on the following reasons:
 - programs are constructed from packages that offer clear code separation
 - google APIs are often written in Go, it would be nice to follow those implementations
 - check the hype out???
+
+Going with Travis CI as our CI tool was based on the following reasons:
+- TBD
+
+Choosing PostgreSQL as database system because:
+- TBD
+
+Choosing Prometheus/Grafana was based on the following reasons:
+- TBD
