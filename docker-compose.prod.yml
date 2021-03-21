@@ -2,10 +2,7 @@ version: "3"
 
 services:
   minitwit:
-    image: minitwit:latest
-    build:
-      context: .
-      dockerfile: .deploy/itu-minitwit-go/Dockerfile
+    image: vlcr/minitwit:latest
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -18,10 +15,7 @@ services:
       - 8080:8080
 
   minitwit-api:
-    image: minitwit-api:latest
-    build:
-      context: .
-      dockerfile: .deploy/itu-minitwit-api/Dockerfile
+    image: vlcr/minitwit-api:latest
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
