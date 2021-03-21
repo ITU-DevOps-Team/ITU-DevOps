@@ -3,6 +3,12 @@ name: Deploy pipeline
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_PASS: ${{ secrets.DB_PASS }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
 on:
   push:
@@ -54,19 +60,22 @@ jobs:
     steps:
       - name: multiple command
         uses: appleboy/ssh-action@master
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
         with:
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            git checkout development
+            git pull
+
+            export DB_HOST=$DB_HOST
+            export DB_PORT=$DB_PORT
+            export DB_PASS=$DB_PASS
+            export DB_NAME=$DB_NAME
+            export DB_USER=$DB_USER
+            export DB_SSLMODE=$DB_SSLMODE
+            
             cd app
             docker kill $(docker ps -q)
             docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
