@@ -43,7 +43,7 @@ jobs:
         uses: docker/login-action@v1.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: push minitwit-api image
         run: docker push $DOCKERHUB_USER/minitwit-api:latest
 
