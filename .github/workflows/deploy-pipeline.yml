@@ -66,6 +66,8 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            cd app
+            
             git checkout development
             git pull
 
@@ -76,7 +78,6 @@ jobs:
             export DB_USER=$DB_USER
             export DB_SSLMODE=$DB_SSLMODE
             
-            cd app
             docker kill $(docker ps -q)
             docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
             docker-compose -f ./docker-compose.prod.yml up -d
