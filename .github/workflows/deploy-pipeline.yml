@@ -3,12 +3,20 @@ name: Deploy pipeline
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_PASS: ${{ secrets.DB_PASS }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
 on:
   push:
     branches: 
       - development
   workflow_dispatch:
+    branches:
+      - development
 
 jobs:
   minitwit:
@@ -60,5 +68,5 @@ jobs:
           script: |
             cd app
             docker-compose -f ./docker-compose.prod.yml down
-            docker-compose -f ./docker-compose.prod.yml pull
+            docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
             docker-compose -f ./docker-compose.prod.yml up -d
