@@ -22,7 +22,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: build minitwit image
-        run: docker build -f .deploy/minitwit/Dockerfile -t minitwit:latest .
+        run: docker build -f .deploy/itu-minitwit-go/Dockerfile -t minitwit:latest .
       - name: login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -38,7 +38,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: build minitwit-api image
-        run: docker build -f .deploy/minitwit-api/Dockerfile -t minitwit-api:latest .
+        run: docker build -f .deploy/itu-minitwit-api/Dockerfile -t minitwit-api:latest .
       - name: login to Docker Hub
         uses: docker/login-action@v1
         with:
