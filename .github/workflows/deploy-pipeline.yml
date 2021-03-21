@@ -3,10 +3,6 @@ name: Deploy pipeline
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  SSH_KEY: ${{ secrets.SSH_KEY }}
-  HOST: ${{ secrets.HOST }}
-  USER: ${{ secrets.USER }}
-  PORT: ${{ secrets.PORT }}
 
 on:
   push:
@@ -57,10 +53,10 @@ jobs:
       - name: multiple command
         uses: appleboy/ssh-action@master
         with:
-          host: $HOST
-          port: $PORT
-          username: $USER
-          key: $SSH_KEY
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             cd app
             docker-compose -f ./docker-compose.prod.yml down
