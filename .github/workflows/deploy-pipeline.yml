@@ -9,6 +9,8 @@ on:
     branches: 
       - development
   workflow_dispatch:
+    branches:
+      - development
 
 jobs:
   minitwit:
