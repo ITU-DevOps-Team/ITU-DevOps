@@ -11,6 +11,8 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const DRIVER = "sqlite3"
@@ -66,7 +68,18 @@ func ReadDBVariables() (string, error) {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbPort, sslMode), err
 }
 
+// Initialize prometheus
+func init() {
+	prometheus.MustRegister(minitwit_api_register_requests)
+	prometheus.MustRegister(minitwit_api_messages_requests)
+	prometheus.MustRegister(minitwit_api_messages_per_user_requests)
+	prometheus.MustRegister(minitwit_api_follow_requests)
+	prometheus.MustRegister(minitwit_api_total_requests)
+}
+
 func main() {
+
+
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Println("Failed to read .env file")
@@ -85,11 +98,13 @@ func main() {
 	}
 
 	r := mux.NewRouter()
+
 	r.Use(LatestMiddleware(gorm))
 	r.Use(AuthenticationMiddleware())
 	r.Handle("/latest", LatestHandler(gorm)).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(gorm)).Methods("GET")
+	r.Handle("/metrics",promhttp.Handler())
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(gorm)).Methods("GET", "POST")
 	r.Handle("/fllws/{username}", FollowHandler(gorm)).Methods("GET", "POST")
 

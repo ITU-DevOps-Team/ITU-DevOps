@@ -11,11 +11,38 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+
+//Prometheus metrics
+var (
+	minitwit_api_register_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "minitwit_api_register_requests",
+		Help:        "The count of requests to the /register endpoint of the backend API",
+	})
+	minitwit_api_messages_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:				 "minitwit_api_messages_requests",
+		Help:				 "The count of requests to the /msgs endpoint of the backend API",
+	})
+	minitwit_api_messages_per_user_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:				 "minitwit_api_messages_per_user_requests",
+		Help:				 "The count of requests to the /msgs/{username} endpoint of the backend API",
+	})
+	minitwit_api_follow_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:				 "minitwit_api_follow_requests",
+		Help:				 "The count of requests to the /fllws/{username} endpoint of the backend API",
+	})
+	minitwit_api_total_requests = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:				 "minitwit_api_total_requests",
+		Help:				 "The total count of requests to the backend API",
+	})
 )
 
 
 func LatestHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		latestObj, _ := GetLatest(db)
 		json.NewEncoder(w).Encode(&latestObj)
 	})
@@ -23,6 +50,9 @@ func LatestHandler(db *gorm.DB) http.Handler {
 
 func RegisterApiHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_api_register_requests.Inc()
+
 		var u User_
 		error_msg := ""
 		err := json.NewDecoder(r.Body).Decode(&u)
@@ -75,6 +105,9 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 
 func MessagesHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_api_messages_requests.Inc()
+
 		//TODO: Update latest value?? Or does the middleware handle that?
 		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
 		//default set to 100
@@ -131,6 +164,9 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 
 func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_api_messages_per_user_requests.Inc()
+
 		//TODO: Update latest value?? Or does the middleware handle that?
 		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
 		//default set to 100
@@ -224,6 +260,9 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 
 func FollowHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		minitwit_api_follow_requests.Inc()
+
 		username := mux.Vars(r)["username"]
 		user, err := GetUserByUsername(username, db)
 		if err != nil {
@@ -309,6 +348,7 @@ func FollowHandler(db *gorm.DB) http.Handler {
 
 func AuthenticationMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
+		minitwit_api_total_requests.Inc()
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
 			if header != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
@@ -331,15 +371,24 @@ func AuthenticationMiddleware() func(http.Handler) http.Handler {
 func LatestMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
-			keys, ok := r.URL.Query()["latest"]
 
-			if !ok || len(keys[0]) < 1 {
-				log.Println("Request does not contain a new latest value")
-			} else {
-				latest, _ := strconv.Atoi(keys[0])
-				latestObj := Latest{latest}
-				AddLatest(latestObj, db)
-				log.Println(latest)
+			//If the request comes from Prometheus, skip the latestmiddleware
+			agent := r.Header.Get("User-Agent")
+      if (strings.Split(agent,"/")[0] != "Prometheus"){
+
+
+				keys, ok := r.URL.Query()["latest"]
+
+				if !ok || len(keys[0]) < 1 {
+					log.Println("Request does not contain a new latest value")
+				} else {
+					latest, _ := strconv.Atoi(keys[0])
+					latestObj := Latest{latest}
+					AddLatest(latestObj, db)
+					log.Println(latest)
+				}
+
+
 			}
 
 			next.ServeHTTP(w, r)
