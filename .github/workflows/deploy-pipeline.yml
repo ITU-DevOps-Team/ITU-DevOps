@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            ./export_env_vars
+            source ./export_env_vars
 
             cd app
             git checkout development
