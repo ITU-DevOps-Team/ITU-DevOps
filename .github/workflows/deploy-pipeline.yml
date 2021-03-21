@@ -66,9 +66,8 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: DB_HOST,DB_PORT,DB_PASS,DB_NAME,DB_USER,DB_SSLMODE
           script: |
             cd app
-            docker-compose -f ./docker-compose.prod.yml down
+            docker kill $(docker ps -q)
             docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
             docker-compose -f ./docker-compose.prod.yml up -d
