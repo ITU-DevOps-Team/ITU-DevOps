@@ -59,6 +59,7 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
+          script_stop: true
           script: |
             source ./export_env_vars
 
