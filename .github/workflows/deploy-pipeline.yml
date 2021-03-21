@@ -1,0 +1,68 @@
+name: Deploy pipeline
+
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  SSH_KEY: ${{ secrets.SSH_KEY }}
+  HOST: ${{ secrets.HOST }}
+  USER: ${{ secrets.USER }}
+  PORT: ${{ secrets.PORT }}
+
+on:
+  pull_request:
+    branches: 
+      - development
+  workflow_dispatch:
+
+jobs:
+  minitwit:
+    name: build and push docker image for minitwit
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build minitwit image
+        run: docker build -f .deploy/minitwit/Dockerfile -t minitwit:latest .
+      - name: login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_TOKEN
+      - name: push minitwit image
+        run: docker push $DOCKERHUB_USER/minitwit:latest
+
+  minitwit-api:
+    name: build and push docker image for minitwit-api
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build minitwit-api image
+        run: docker build -f .deploy/minitwit-api/Dockerfile -t minitwit-api:latest .
+      - name: login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_TOKEN
+      - name: push minitwit-api image
+        run: docker push $DOCKERHUB_USER/minitwit-api:latest
+
+  deploy:
+    name: deploy changes to droplet
+    needs:
+      - minitwit
+      - minitwit-api
+    runs-on: ubuntu-20.04
+    steps:
+      - name: multiple command
+        uses: appleboy/ssh-action@master
+        with:
+          host: $HOST
+          port: $PORT
+          username: $USER
+          key: $SSH_KEY
+          script: |
+            cd app
+            docker-compose -f ./docker-compose.prod.yml down
+            docker-compose -f ./docker-compose.prod.yml pull
+            docker-compose -f ./docker-compose.prod.yml up -d
