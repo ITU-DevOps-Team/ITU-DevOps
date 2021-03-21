@@ -9,7 +9,7 @@ env:
   PORT: ${{ secrets.PORT }}
 
 on:
-  pull_request:
+  push:
     branches: 
       - development
   workflow_dispatch:
