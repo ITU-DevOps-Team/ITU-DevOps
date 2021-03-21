@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           script: |
-            source ~/export_env_vars
+            source ~/export_env_vars.sh
 
             cd app
             git checkout development
