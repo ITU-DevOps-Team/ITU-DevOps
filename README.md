@@ -1,7 +1,5 @@
 # ITU-DevOps
 
-[![Build Status](https://travis-ci.org/ITU-DevOps-Team/ITU-DevOps.svg?branch=development)](https://travis-ci.org/ITU-DevOps-Team/ITU-DevOps)
-
 Course repository
 
 ## Requirements
