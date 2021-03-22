@@ -266,3 +266,4 @@ minitwit.db
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,python,powershell,c,go
 itu-minitwit-go/.idea/workspace.xml
+.idea/workspace.xml
