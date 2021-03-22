@@ -2,7 +2,7 @@
 
 Course repository
 
-[![Deploy pipeline](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml/badge.svg)](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml)
+[![deploy](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml/badge.svg?branch=development)](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml)
 
 ## Requirements
 
