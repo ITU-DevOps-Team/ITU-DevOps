@@ -52,7 +52,7 @@ jobs:
       - minitwit-api
     runs-on: ubuntu-20.04
     steps:
-      - name: multiple command
+      - name: run deploy steps
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -70,3 +70,4 @@ jobs:
             docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
             docker kill $(docker ps -q)
             docker-compose -f ./docker-compose.prod.yml up -d
+            docker system prune -f
