@@ -75,7 +75,15 @@ func init() {
 	prometheus.MustRegister(minitwit_api_messages_per_user_requests)
 	prometheus.MustRegister(minitwit_api_follow_requests)
 	prometheus.MustRegister(minitwit_api_total_requests)
+	prometheus.MustRegister(minitwit_api_latest_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_register_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_messages_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_messages_per_user_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_follow_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_authentication_middleware_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_latest_middleware_execution_time_in_ns)
 }
+
 
 func main() {
 
