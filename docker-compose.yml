@@ -43,6 +43,8 @@ services:
     image: grafana/grafana:4.5.2
     ports:
       - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
 
   database:
     image: 'postgres'
@@ -65,3 +67,4 @@ services:
 
 volumes:
   database-data:
+  grafana-storage:
