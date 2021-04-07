@@ -43,6 +43,90 @@ services:
     image: grafana/grafana:4.5.2
     ports:
       - "3000:3000"
+      
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:7.12.0
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=password
+      - xpack.security.enabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    stdin_open: true
+    tty: true
+    networks:
+      - elk
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+  kibana:
+    container_name: kibana
+    image: kibana:7.12.0
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 5601:5601
+    environment:
+        SERVER_HOST: 0.0.0.0
+        ELASTICSEARCH_URL: http://elasticsearch:9200
+        ELASTIC_USERNAME: elastic
+        ELASTIC_PASSWORD: password
+    depends_on:
+      - elasticsearch
+   
+    stdin_open: true
+    tty: true
+    networks:
+     - elk
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      - elk
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+        
+  filebeat:
+    user: root
+    container_name: filebeat
+    image: docker.elastic.co/beats/filebeat:7.12.0
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+    volumes:
+      - /var/run/docker.sock:/host_docker/docker.sock
+      - /var/lib/docker:/host_docker/var/lib/docker
+      - ./logs:/usr/share/filebeat/logs
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+    command: ["--strict.perms=false"]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    stdin_open: true
+    tty: true
+    networks:
+      - elk
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
 
   database:
     image: 'postgres'
@@ -65,3 +149,6 @@ services:
 
 volumes:
   database-data:
+
+networks:
+ elk:

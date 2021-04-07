@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 
@@ -95,6 +95,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.SetFormatter(&log.JSONFormatter{
+		FieldMap: log.FieldMap{                               
+			log.FieldKeyTime:  "@timestamp",            
+			log.FieldKeyMsg:   "message",
+		},
+	})
+	log.SetLevel(log.TraceLevel)
+
+	file, err := os.OpenFile("/usr/local/etc/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	}
+	defer file.Close()
+
+	fields := log.Fields{"testId": 0}
+  	log.WithFields(fields).Info("First log message sent to Kibana!")
 
 	LoadTemplates()
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
