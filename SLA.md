@@ -18,7 +18,7 @@ The following Service Provider and Customer will be used as the basis of the SLA
 
 The Service provides the following service levels
 
-| Metric               | Percentage |
+| Metric               | Promise    |
 | -------------------- | ---------- |
 | Uptime               | 90%        |
 | Mean response time   | 250 ms     |
