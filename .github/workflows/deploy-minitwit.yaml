@@ -1,0 +1,49 @@
+name: minitwit deploy pipeline
+
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+on:
+  push:
+    branches: 
+      - development
+  workflow_dispatch:
+    branches:
+      - development
+
+jobs:
+  build-minitwit:
+    name: build and push docker image for minitwit
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build minitwit image
+        run: docker build -f .deploy/itu-minitwit-go/Dockerfile -t $DOCKERHUB_USER/minitwit:latest .
+      - name: login to Docker Hub
+        uses: docker/login-action@v1.8.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: push minitwit image
+        run: docker push $DOCKERHUB_USER/minitwit:latest
+
+  deploy-minitwit:
+    name: deploy minitwit changes to docker-swarm manager
+    needs:
+      - minitwit
+    runs-on: ubuntu-20.04
+    steps:
+      - name: run deploy steps
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            docker pull vlcr/minitwit:latest
+            docker service update minitwit
+            docker system prune -f
