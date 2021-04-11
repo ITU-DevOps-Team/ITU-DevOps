@@ -32,7 +32,7 @@ jobs:
   deploy-minitwit:
     name: deploy minitwit changes to docker-swarm manager
     needs:
-      - minitwit
+      - build-minitwit
     runs-on: ubuntu-20.04
     steps:
       - name: run deploy steps
