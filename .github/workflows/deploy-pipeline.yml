@@ -45,10 +45,28 @@ jobs:
       - name: push minitwit-api image
         run: docker push $DOCKERHUB_USER/minitwit-api:latest
 
-  deploy:
-    name: deploy changes to droplet
+  deploy-minitwit:
+    name: deploy minitwit changes to docker-swarm manager
     needs:
       - minitwit
+    runs-on: ubuntu-20.04
+    steps:
+      - name: run deploy steps
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            docker pull vlcr/minitwit:latest
+            docker service update minitwit
+            docker system prune -f
+
+  deploy-minitwit-api:
+    name: deploy minitwit-api changes to docker-swarm manager
+    needs:
       - minitwit-api
     runs-on: ubuntu-20.04
     steps:
@@ -61,13 +79,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           script: |
-            source ~/export_env_vars.sh
-
-            cd app
-            git checkout development
-            git pull
-            
-            docker-compose -f ./docker-compose.prod.yml pull minitwit minitwit-api
-            docker kill $(docker ps -q)
-            docker-compose -f ./docker-compose.prod.yml up -d
+            docker pull vlcr/minitwit-api:latest
+            docker service update minitwit-api
             docker system prune -f
