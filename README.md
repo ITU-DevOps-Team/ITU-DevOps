@@ -2,7 +2,7 @@
 
 Course repository
 
-[![deploy](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml/badge.svg?branch=development)](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-pipeline.yml)
+[![minitwit deploy pipeline](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-minitwit.yaml/badge.svg?branch=development)](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-minitwit.yaml) [![minitwit-api deploy pipeline](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-minitwit-api.yaml/badge.svg?branch=development)](https://github.com/ITU-DevOps-Team/ITU-DevOps/actions/workflows/deploy-minitwit-api.yaml)
 
 ## Requirements
 
