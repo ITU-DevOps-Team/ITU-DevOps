@@ -45,5 +45,5 @@ jobs:
           script_stop: true
           script: |
             docker pull vlcr/minitwit-api:latest
-            docker service update minitwit-api
+            docker service update --force minitwit-api
             docker system prune -f
