@@ -1,0 +1,49 @@
+name: minitwit-api deploy pipeline
+
+env:
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+on:
+  push:
+    branches: 
+      - development
+  workflow_dispatch:
+    branches:
+      - development
+
+jobs:
+  build-minitwit-api:
+    name: build and push docker image for minitwit-api
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build minitwit-api image
+        run: docker build -f .deploy/itu-minitwit-api/Dockerfile -t $DOCKERHUB_USER/minitwit-api:latest .
+      - name: login to Docker Hub
+        uses: docker/login-action@v1.8.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: push minitwit-api image
+        run: docker push $DOCKERHUB_USER/minitwit-api:latest
+
+  deploy-minitwit-api:
+    name: deploy minitwit-api changes to docker-swarm manager
+    needs:
+      - build-minitwit-api
+    runs-on: ubuntu-20.04
+    steps:
+      - name: run deploy steps
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            docker pull vlcr/minitwit-api:latest
+            docker service update --force minitwit-api
+            docker system prune -f

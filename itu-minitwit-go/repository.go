@@ -43,6 +43,9 @@ func CheckIfUserIsFollowed(who string, whom string, db *gorm.DB) bool {
 	if whom == "" {
 		return false
 	}
+	if who == "" {
+		return false
+	}
 
 	whomUser, err := GetUserByUsername(whom, db)
 	checkErr(err)

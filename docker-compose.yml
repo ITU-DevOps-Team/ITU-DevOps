@@ -42,7 +42,10 @@ services:
   grafana:
     image: grafana/grafana:4.5.2
     ports:
-      - "3000:3000"
+      - "3000:3000"            
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
       
   elasticsearch:
     container_name: elasticsearch
@@ -120,6 +123,7 @@ services:
       options:
         max-size: "10m"
         max-file: "50"
+  
 
   database:
     image: 'postgres'
@@ -142,3 +146,4 @@ services:
 
 volumes:
   database-data:
+  grafana-storage:
