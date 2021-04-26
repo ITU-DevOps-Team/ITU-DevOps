@@ -102,16 +102,13 @@ func main() {
 			log.FieldKeyMsg:   "message",
 		},
 	})
-	log.SetLevel(log.TraceLevel)
+	log.SetLevel(log.Fatal)
 
-	file, err := os.OpenFile("/usr/local/etc/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	file, err := os.OpenFile("/usr/share/filebeat/logs/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err == nil {
 		log.SetOutput(file)
 	}
 	defer file.Close()
-
-	fields := log.Fields{"testId": 0}
-  	log.WithFields(fields).Info("First log message sent to Kibana!")
 
 	LoadTemplates()
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
@@ -119,7 +116,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
-
+	
 	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")

@@ -52,18 +52,15 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - ELASTIC_PASSWORD=password
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
         hard: -1
     ports:
       - 9200:9200
-      - 9300:9300
     stdin_open: true
     tty: true
-    networks:
-      - elk
     
     logging:
       driver: "json-file"
@@ -81,7 +78,7 @@ services:
       - 5601:5601
     environment:
         SERVER_HOST: 0.0.0.0
-        ELASTICSEARCH_URL: http://elasticsearch:9200
+        ELASTICSEARCH_HOSTS: http://elasticsearch:9200
         ELASTIC_USERNAME: elastic
         ELASTIC_PASSWORD: password
     depends_on:
@@ -89,11 +86,9 @@ services:
    
     stdin_open: true
     tty: true
-    networks:
-     - elk
+  
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml
-      - elk
     logging:
       driver: "json-file"
       options:
@@ -120,8 +115,6 @@ services:
         hard: -1
     stdin_open: true
     tty: true
-    networks:
-      - elk
     logging:
       driver: "json-file"
       options:
@@ -149,6 +142,3 @@ services:
 
 volumes:
   database-data:
-
-networks:
- elk:
