@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 
@@ -96,13 +96,27 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.SetFormatter(&log.JSONFormatter{
+		FieldMap: log.FieldMap{                               
+			log.FieldKeyTime:  "@timestamp",            
+			log.FieldKeyMsg:   "message",
+		},
+	})
+	log.SetLevel(log.Fatal)
+
+	file, err := os.OpenFile("/usr/share/filebeat/logs/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	}
+	defer file.Close()
+
 	LoadTemplates()
 	store := sessions.NewCookieStore([]byte(SECRET_KEY))
 
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
-
+	
 	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")
