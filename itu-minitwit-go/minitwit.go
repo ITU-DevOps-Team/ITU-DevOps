@@ -102,7 +102,7 @@ func main() {
 			log.FieldKeyMsg:   "message",
 		},
 	})
-	log.SetLevel(log.Fatal)
+	log.SetLevel(log.Info)
 
 	file, err := os.OpenFile("/usr/share/filebeat/logs/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err == nil {
