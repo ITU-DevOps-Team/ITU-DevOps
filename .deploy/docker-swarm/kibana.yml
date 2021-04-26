@@ -1,0 +1,2 @@
+server.name: kibana
+elasticsearch.hosts: ["http://188.166.193.132:9200"]
