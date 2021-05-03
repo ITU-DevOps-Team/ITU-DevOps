@@ -13,6 +13,12 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
      
+      - name: print working dir
+        run: pwd
+
+      - name: list files in working dir
+        run: ls -la $(pwd) 
+
       - name: check dir
         run: ls -la report/build
       - uses: mkrakowitzer/actions-makepdfs@master
@@ -27,7 +33,7 @@ jobs:
           git add report/build
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@noreply.github.com'
-          git commit -m 'chore: update report.pf'
+          git commit -m 'chore: update report.pdf'
           git push
 
 
