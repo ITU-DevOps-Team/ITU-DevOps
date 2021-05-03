@@ -29,9 +29,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: report.pdf
-          path: ~/downloads/report.pdf
+          path: ~/downloads
+      - name: ls downloads
+        run: ls -la ~/downloads
       - name: copy report.pdf to report dir
-        run: cp -r ~/downloads/report.pdf $WORKING_DIR/report/build
+        run: cp -r ~/downloads $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
           git add report/build
