@@ -1,0 +1,25 @@
+name: test documentation workflow
+
+on: 
+  push:
+   branches:
+     - test/*
+
+jobs:
+  generate-report:
+    name: generate report.pdf based on the markdown docs
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Markdown to PDF and HTML
+        uses: BaileyJM02/markdown-to-pdf@v1
+        with:
+          input_dir:  report/docs/front/
+          images_dir: report/images
+          output_dir: report/build
+          build_html: false
+      - uses: actions/upload-artifact@v1
+        with:
+          name: report/docs/front/
+          path: report/build
