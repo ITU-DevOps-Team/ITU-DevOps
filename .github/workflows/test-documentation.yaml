@@ -18,13 +18,26 @@ jobs:
         with:
           sources: 'report/docs/front/front-page.md report/docs/*'
 
-      - name: upload document
-        uses: actions/upload-artifact@v2
-        id: upload-document
+      - name: Pushes test file
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          name: report.pdf
-          path: ${{ steps.publish-document.outputs.pdf }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: report.pdf
-          path: report/build/
+          source_file: report.pdf
+          destination_repo: ITU-DevOps-Team/ITU-DevOps
+          destination_folder: report/build
+          user_email: 'actions@github.com'
+          user_name: 'github-actions'
+          commit_message: 'Update report.pdf'
+
+
+      # - name: upload document
+      #   uses: actions/upload-artifact@v2
+      #   id: upload-document
+      #   with:
+      #     name: report.pdf
+      #     path: ${{ steps.publish-document.outputs.pdf }}
+      # - uses: actions/download-artifact@v2
+      #   with:
+      #     name: report.pdf
+      #     path: report/build/
