@@ -33,11 +33,12 @@ jobs:
       - name: ls downloads
         run: ls -la ~/downloads
       - name: copy report.pdf to report dir
-        run: cp -r ~/downloads $WORKING_DIR/report/build
+        run: cp ~/downloads/document.pdf $WORKING_DIR/report/build
       - name: ls report/build
         run: ls -la $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
+          pdw
           git add report/build
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@noreply.github.com'
