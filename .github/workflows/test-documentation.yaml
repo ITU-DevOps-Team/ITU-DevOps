@@ -12,14 +12,19 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: Markdown to PDF and HTML
-        uses: BaileyJM02/markdown-to-pdf@v1
+      - name: publish markdown as pdf
+        uses: shrink/actions-document-publish@v1
+        id: publish-document
         with:
-          input_dir:  report/docs/front/
-          images_dir: report/images
-          output_dir: report/build
-          build_html: false
-      - uses: actions/upload-artifact@v1
+          sources: 'report/docs/front/front-page.md report/docs/*'
+
+      - name: upload document
+        uses: actions/upload-artifact@v2
+        id: upload-document
         with:
-          name: report/docs/front/
-          path: report/build
+          name: report.pdf
+          path: ${{ steps.publish-document.outputs.pdf }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: report.pdf
+          path: ~/download/path
