@@ -36,12 +36,12 @@ jobs:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
           source-directory: ~/downloads
-          destination-github-username: github-actions
-          destination-repository-name: ITU-DevOps-Team/ITU-DevOps
+          destination-github-username: ITU-DevOps-Team
+          destination-repository-name: ITU-DevOps
           user-email: actions@github.com
           target-branch: development
 
-          
+
     #  - name: commit and push report.pdf
     #     uses: EndBug/add-and-commit@v7
     #     with:
