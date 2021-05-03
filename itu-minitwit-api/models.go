@@ -37,3 +37,8 @@ type Response struct {
 type Latest struct {
 	Latest int `json:"latest"`
 }
+
+type body struct {
+	Follow   string `json:"follow"`
+	Unfollow string `json:"unfollow"`
+}
