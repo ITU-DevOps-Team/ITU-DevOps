@@ -18,12 +18,16 @@ jobs:
         with:
           sources: 'report/docs/front/front-page.md report/docs/*'
 
+      - uses: actions/download-artifact@v2
+        with:
+          name: report.pdf
+          path: ~/downloads/
       - name: Pushes test file
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: report.pdf
+          source_file: ~/downloads/report.pdf
           destination_repo: ITU-DevOps-Team/ITU-DevOps
           destination_branch: development
           destination_folder: report/build
@@ -38,7 +42,3 @@ jobs:
       #   with:
       #     name: report.pdf
       #     path: ${{ steps.publish-document.outputs.pdf }}
-      # - uses: actions/download-artifact@v2
-      #   with:
-      #     name: report.pdf
-      #     path: report/build/
