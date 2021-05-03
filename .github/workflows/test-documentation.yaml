@@ -31,7 +31,7 @@ jobs:
           name: report.pdf
           path: ~/downloads/report.pdf
       - name: copy report.pdf to report dir
-        run: cp ~/downloads/report.pdf $WORKING_DIR/report/build
+        run: cp -r ~/downloads/report.pdf $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
           git add report/build
