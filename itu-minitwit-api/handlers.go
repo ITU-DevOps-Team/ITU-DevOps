@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 
@@ -96,7 +96,7 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 		minitwit_api_register_requests.Inc()
 
 		var u User_
-		error_msg := ""
+		errormsg := ""
 		err := json.NewDecoder(r.Body).Decode(&u)
 
 		if err != nil {
@@ -107,19 +107,19 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 		}
 
 		if u.Username == "" {
-			error_msg = "You have to enter a username"
+			errormsg = "You have to enter a username"
 		} else if u.Email == "" || !strings.ContainsAny(u.Email, "@") {
-			error_msg = "You have to enter a email"
+			errormsg = "You have to enter a email"
 		} else if u.Pwd == "" {
-			error_msg = "You have to enter a password"
+			errormsg = "You have to enter a password"
 		} else if user_check, _ := GetUserByUsername(u.Username, db); user_check.Username == u.Username {
-			error_msg = "The username is already taken"
+			errormsg = "The username is already taken"
 		}
 
-		if error_msg != "" {
+		if errormsg != "" {
 			e := Response{
 				Status:    http.StatusBadRequest,
-				Error_msg: error_msg,
+				Error_msg: errormsg,
 			}
 
 			w.WriteHeader(http.StatusBadRequest)
@@ -156,7 +156,6 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 		var t0 = time.Now();
 		minitwit_api_messages_requests.Inc()
 
-		//TODO: Update latest value?? Or does the middleware handle that?
 		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
 		//default set to 100
 		numberOfMessages := 100
@@ -212,13 +211,100 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 	})
 }
 
+func UserHandlerGet(db *gorm.DB, w *http.ResponseWriter, r *http.Request, t0 time.Time, numberOfMessages int, ) {
+	username := mux.Vars(r)["username"]
+	user, err := GetUserByUsername(username, db)
+	if err != nil {
+		http.Error(*w, "User not found", http.StatusNotFound)
+		var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
+		minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
+		return
+	}
+
+	//type used for scanning the query results
+	type result struct {
+		UserID    int
+		Username  string
+		Email     string
+		PwHash    string
+		MessageID int
+		AuthorID  int
+		Text      string
+		PubDate   int
+		Flagged   int
+	}
+
+	var queryData []result
+	db.Table("messages").
+		Joins("JOIN users on users.user_id = messages.author_id").
+		Where("messages.flagged = 0 AND users.user_id = ?", user.UserID).
+		Order("messages.pub_date DESC").
+		Limit(numberOfMessages).
+		Scan(&queryData)
+
+	type filteredMessage struct {
+		Content string `json:"content"`
+		PubDate int    `json:"pub_date"`
+		User    string `json:"user"`
+	}
+
+	var filteredMessages []filteredMessage
+
+	for i := range queryData {
+		filteredMsg := filteredMessage{}
+		filteredMsg.Content = queryData[i].Text
+		filteredMsg.PubDate = queryData[i].PubDate
+		filteredMsg.User = queryData[i].Username
+		filteredMessages = append(filteredMessages, filteredMsg)
+	}
+
+	json.NewEncoder(*w).Encode(&filteredMessages)
+	var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
+	minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
+	return
+}
+
+func UserHandlerPost(db *gorm.DB, w *http.ResponseWriter, r *http.Request, t0 time.Time) {
+	var msg Message_
+	err := json.NewDecoder(r.Body).Decode(&msg)
+
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusBadRequest)
+		var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
+		minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
+		return
+	}
+
+	username := mux.Vars(r)["username"]
+	user, err := GetUserByUsername(username, db)
+	if err != nil {
+		http.Error(*w, "User not found", http.StatusNotFound)
+		var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
+		minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
+		return
+	}
+
+	message := Message{
+		Author_id: user.UserID,
+		Text:      msg.Content,
+		Pub_date:  int(time.Now().Unix()),
+		Flagged:   0,
+	}
+
+	result := db.Create(&message)
+	if result.Error != nil {
+		log.Println(result.Error)
+	}
+
+	(*w).WriteHeader(http.StatusNoContent)
+}
+
 func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var t0 = time.Now();
+		var t0 = time.Now()
 
 		minitwit_api_messages_per_user_requests.Inc()
 
-		//TODO: Update latest value?? Or does the middleware handle that?
 		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
 		//default set to 100
 		numberOfMessages := 100
@@ -228,91 +314,10 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 				numberOfMessages = parsed
 			}
 		}
-
 		if r.Method == "GET" {
-			username := mux.Vars(r)["username"]
-			user, err := GetUserByUsername(username, db)
-			if err != nil {
-				http.Error(w, "User not found", http.StatusNotFound)
-				var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
-				minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
-				return
-			}
-
-			//type used for scanning the query results
-			type result struct {
-				UserID    int
-				Username  string
-				Email     string
-				PwHash    string
-				MessageID int
-				AuthorID  int
-				Text      string
-				PubDate   int
-				Flagged   int
-			}
-
-			var queryData []result
-			db.Table("messages").
-				Joins("JOIN users on users.user_id = messages.author_id").
-				Where("messages.flagged = 0 AND users.user_id = ?", user.UserID).
-				Order("messages.pub_date DESC").
-				Limit(numberOfMessages).
-				Scan(&queryData)
-
-			type filteredMessage struct {
-				Content string `json:"content"`
-				PubDate int    `json:"pub_date"`
-				User    string `json:"user"`
-			}
-
-			filteredMessages := []filteredMessage{}
-
-			for i := range queryData {
-				filteredMsg := filteredMessage{}
-				filteredMsg.Content = queryData[i].Text
-				filteredMsg.PubDate = queryData[i].PubDate
-				filteredMsg.User = queryData[i].Username
-				filteredMessages = append(filteredMessages, filteredMsg)
-			}
-
-			json.NewEncoder(w).Encode(&filteredMessages)
-			var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
-			minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
-			return
+			UserHandlerGet(db, &w, r, t0, numberOfMessages)
 		} else if r.Method == "POST" {
-			var msg Message_
-			err := json.NewDecoder(r.Body).Decode(&msg)
-
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
-				minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
-				return
-			}
-
-			username := mux.Vars(r)["username"]
-			user, err := GetUserByUsername(username, db)
-			if err != nil {
-				http.Error(w, "User not found", http.StatusNotFound)
-				var elapsed = float64((time.Now().Sub(t0)).Nanoseconds())
-				minitwit_api_messages_per_user_execution_time_in_ns.Observe(elapsed)
-				return
-			}
-
-			message := Message{
-				Author_id: user.UserID,
-				Text:      msg.Content,
-				Pub_date:  int(time.Now().Unix()),
-				Flagged:   0,
-			}
-
-			result := db.Create(&message)
-			if result.Error != nil {
-				log.Println(result.Error)
-			}
-
-			w.WriteHeader(http.StatusNoContent)
+			UserHandlerPost(db, &w, r, t0)
 		}
 	})
 }
