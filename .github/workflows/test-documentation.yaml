@@ -27,7 +27,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: report.pdf
-          path: ~/downloads/
+          path: ~/downloads/report.pdf
       - name: check dir
         run: ls -la ~/downloads
       - name: push report.pdf to repo
