@@ -30,52 +30,14 @@ jobs:
         with:
           name: report.pdf
           path: ~/downloads
-      - name: ls downloads
-        run: ls -la ~/downloads
+      - name: rename document.pdf to report.pdf
+        run: mv ~/downloads/document.pdf ~/downloads/report.pdf
       - name: copy report.pdf to report dir
-        run: cp ~/downloads/document.pdf $WORKING_DIR/report/build
-      - name: ls report/build
-        run: ls -la $WORKING_DIR/report/build
+        run: cp ~/downloads/report.pdf $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
-          pwd
           git add report/build
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@noreply.github.com'
           git commit -m 'chore: update report.pdf'
           git push
-
-
-      # - name: print working dir
-      #   run: pwd
-
-      # - name: list files in working dir
-      #   run: ls -la $(pwd) 
-
-      # - name: check dir
-      #   run: ls -la report/build
-      # - uses: mkrakowitzer/actions-makepdfs@master
-      #   with:
-      #     markdown_dir: report/docs
-      #     output_dir: report/build
-      # - name: check dir
-      #   run: ls -la report/build
-
-
-      # - name: publish markdown as pdf
-      #   uses: shrink/actions-document-publish@v1
-      #   id: publish-document
-      #   with:
-      #     sources: 'report/docs/front/front-page.md report/docs/*'
-      # - name: upload document
-      #   uses: actions/upload-artifact@v2
-      #   id: upload-document
-      #   with:
-      #     name: report.pdf
-      #     path: ${{ steps.publish-document.outputs.pdf }}
-      # - name: download document on runner
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: report.pdf
-      #     path: ~/downloads/report.pdf
-
