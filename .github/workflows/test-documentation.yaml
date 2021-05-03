@@ -17,12 +17,18 @@ jobs:
         id: publish-document
         with:
           sources: 'report/docs/front/front-page.md report/docs/*'
-
-      - uses: actions/download-artifact@v2
+      - name: upload document
+        uses: actions/upload-artifact@v2
+        id: upload-document
+        with:
+          name: report.pdf
+          path: ${{ steps.publish-document.outputs.pdf }}
+      - name: download document on runner
+        uses: actions/download-artifact@v2
         with:
           name: report.pdf
           path: ~/downloads/
-      - name: Pushes test file
+      - name: push report.pdf to repo
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -35,10 +41,3 @@ jobs:
           user_name: 'github-actions'
           commit_message: 'Update report.pdf'
 
-
-      # - name: upload document
-      #   uses: actions/upload-artifact@v2
-      #   id: upload-document
-      #   with:
-      #     name: report.pdf
-      #     path: ${{ steps.publish-document.outputs.pdf }}
