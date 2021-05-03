@@ -17,11 +17,11 @@ jobs:
         run: ls -la report/build
       - uses: mkrakowitzer/actions-makepdfs@master
         with:
-          markdown_dir: report/docs/*'
+          markdown_dir: report/docs
           output_dir: report/build
       - name: check dir
         run: ls -la report/build
-        
+
       # - name: publish markdown as pdf
       #   uses: shrink/actions-document-publish@v1
       #   id: publish-document
