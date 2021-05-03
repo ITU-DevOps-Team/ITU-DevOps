@@ -118,9 +118,13 @@ func LoginGet(w *http.ResponseWriter) {
 	}
 }
 
-func LoggedIn(w *http.ResponseWriter, r *http.Request) {
-	fmt.Println("user already signed in -> redirecting to /")
+func LoggedIn(w *http.ResponseWriter, r *http.Request, msg string) {
+	fmt.Println(msg)
 	http.Redirect(*w, r, "/", http.StatusFound)
+}
+
+func CheckUserId(userId interface{}) bool {
+	return userId != "" && userId != nil
 }
 
 //LoginHandler ...
@@ -129,9 +133,9 @@ func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		minitwit_ui_login_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
-		isLoggedIn := userId != "" && userId != nil
+		isLoggedIn := CheckUserId(userId)
 		if isLoggedIn {
-			LoggedIn(&w, r)
+			LoggedIn(&w, r, "user already signed in -> redirecting to /")
 		}
 		if r.Method == "GET" {
 			LoginGet(&w)
@@ -141,7 +145,7 @@ func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	})
 }
 
-func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
+func LogoutHandler(store *sessions.CookieStore) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		minitwit_ui_logout_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
@@ -158,95 +162,100 @@ func LogoutHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	})
 }
 
+func RegisterGet(w *http.ResponseWriter) {
+	if err := templates["register"].Execute(*w, nil); err != nil {
+		http.Error(*w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
+	//parsing form posted by user
+	r.ParseForm()
+	var errorMsg string
+
+	formUsername := r.FormValue("username")
+	formEmail := r.FormValue("email")
+	formPassword := r.FormValue("password")
+	formPasswordConfirm := r.FormValue("password_confirm")
+
+	isemptyFormusername := formUsername == ""
+	isemptyFormemail := formEmail == ""
+	isemptyFormpassword := formPassword == ""
+	isemptyFormpasswordconfirm := formPasswordConfirm == ""
+	incorrectformatFormemail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
+	user, _ := GetUserByUsername(formUsername, db)
+	usernameTaken := user.Username == formUsername
+
+	if isemptyFormusername {
+		errorMsg = "username is empty"
+	} else if isemptyFormemail {
+		errorMsg = "email is empty"
+	} else if isemptyFormpassword {
+		errorMsg = "password is empty"
+	} else if isemptyFormpasswordconfirm {
+		errorMsg = "password repeat is empty"
+	} else if incorrectformatFormemail {
+		errorMsg = "You have to enter a valid email address"
+	} else if formPassword != formPasswordConfirm {
+		//Passwords does not match
+		errorMsg = "password and repeated password does not match"
+	} else if usernameTaken {
+		//Username is already taken
+		errorMsg = "username already exist"
+
+	} else {
+		//Sign up user
+		hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		user := User{
+			Username: formUsername,
+			Email:    formEmail,
+			PwHash:   string(hash),
+		}
+
+		db.Create(&user)
+		//renders sign in page again with error
+		viewContent := ViewContent{
+			Success:        true,
+			SuccessMessage: "User successfully created",
+		}
+
+		if err := templates["login"].Execute(*w, viewContent); err != nil {
+			http.Error(*w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	if errorMsg != "" {
+		//renders register page again with error
+		viewContent := ViewContent{
+			Error:        true,
+			ErrorMessage: errorMsg,
+		}
+
+		if err := templates["register"].Execute(*w, viewContent); err != nil {
+			http.Error(*w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
 func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		minitwit_ui_register_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
-		isLoggedIn := userId != "" && userId != nil
+		isLoggedIn := CheckUserId(userId)
 		if isLoggedIn {
-			fmt.Println("user already signed in")
-			http.Redirect(w, r, "/", http.StatusFound)
+			LoggedIn(&w, r, "User already signed in")
 		}
-
 		if r.Method == "GET" {
-			if err := templates["register"].Execute(w, nil); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			RegisterGet(&w)
 		} else if r.Method == "POST" {
-
-			//parsing form posted by user
-			r.ParseForm()
-			var errorMsg string
-
-			formUsername := r.FormValue("username")
-			formEmail := r.FormValue("email")
-			formPassword := r.FormValue("password")
-			formPasswordConfirm := r.FormValue("password_confirm")
-
-			isemptyFormusername := formUsername == ""
-			isemptyFormemail := formEmail == ""
-			isemptyFormpassword := formPassword == ""
-			isemptyFormpasswordconfirm := formPasswordConfirm == ""
-			incorrectformatFormemail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
-			user, _ := GetUserByUsername(formUsername, db)
-			usernameTaken := user.Username == formUsername
-
-			if isemptyFormusername {
-				errorMsg = "username is empty"
-			} else if isemptyFormemail {
-				errorMsg = "email is empty"
-			} else if isemptyFormpassword {
-				errorMsg = "password is empty"
-			} else if isemptyFormpasswordconfirm {
-				errorMsg = "password repeat is empty"
-			} else if incorrectformatFormemail {
-				errorMsg = "You have to enter a valid email address"
-			} else if formPassword != formPasswordConfirm {
-				//Passwords does not match
-				errorMsg = "password and repeated password does not match"
-			} else if usernameTaken {
-				//Username is already taken
-				errorMsg = "username already exist"
-
-			} else {
-				//Sign up user
-				hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
-
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-				user := User{
-					Username: formUsername,
-					Email:    formEmail,
-					PwHash:   string(hash),
-				}
-
-				db.Create(&user)
-				//renders sign in page again with error
-				viewContent := ViewContent{
-					Success:        true,
-					SuccessMessage: "User successfully created",
-				}
-
-				if err := templates["login"].Execute(w, viewContent); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-			}
-
-			if errorMsg != "" {
-				//renders register page again with error
-				viewContent := ViewContent{
-					Error:        true,
-					ErrorMessage: errorMsg,
-				}
-
-				if err := templates["register"].Execute(w, viewContent); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-			}
+			RegisterPost(db, r, &w)
 		}
 	})
 }
