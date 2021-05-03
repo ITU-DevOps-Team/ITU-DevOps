@@ -174,23 +174,23 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			formPassword := r.FormValue("password")
 			formPasswordConfirm := r.FormValue("password_confirm")
 
-			isEmpty_formUsername := formUsername == ""
-			isEmpty_formEmail := formEmail == ""
-			isEmpty_formPassword := formPassword == ""
-			isEmpty_formPasswordConfirm := formPasswordConfirm == ""
-			incorrectFormat_formEmail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
+			isemptyFormusername := formUsername == ""
+			isemptyFormemail := formEmail == ""
+			isemptyFormpassword := formPassword == ""
+			isemptyFormpasswordconfirm := formPasswordConfirm == ""
+			incorrectformatFormemail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
 			user, _ := GetUserByUsername(formUsername, db)
 			usernameTaken := user.Username == formUsername
 
-			if isEmpty_formUsername {
+			if isemptyFormusername {
 				errorMsg = "username is empty"
-			} else if isEmpty_formEmail {
+			} else if isemptyFormemail {
 				errorMsg = "email is empty"
-			} else if isEmpty_formPassword {
+			} else if isemptyFormpassword {
 				errorMsg = "password is empty"
-			} else if isEmpty_formPasswordConfirm {
+			} else if isemptyFormpasswordconfirm {
 				errorMsg = "password repeat is empty"
-			} else if incorrectFormat_formEmail {
+			} else if incorrectformatFormemail {
 				errorMsg = "You have to enter a valid email address"
 			} else if formPassword != formPasswordConfirm {
 				//Passwords does not match
@@ -423,9 +423,9 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			r.ParseForm()
 			var errorMsg string
 			formText := r.FormValue("text")
-			isEmpty_formText := formText == ""
+			isemptyFormtext := formText == ""
 
-			if isEmpty_formText {
+			if isemptyFormtext {
 				errorMsg = "post is empty"
 			} else {
 
