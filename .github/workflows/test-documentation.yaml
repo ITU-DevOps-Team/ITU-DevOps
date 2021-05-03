@@ -12,54 +12,42 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: publish markdown as pdf
-        uses: shrink/actions-document-publish@v1
-        id: publish-document
-        with:
-          sources: 'report/docs/front/front-page.md report/docs/*'
-      - name: upload document
-        uses: actions/upload-artifact@v2
-        id: upload-document
-        with:
-          name: report.pdf
-          path: ${{ steps.publish-document.outputs.pdf }}
-      - name: download document on runner
-        uses: actions/download-artifact@v2
-        with:
-          name: report.pdf
-          path: ~/downloads/report.pdf
+     
       - name: check dir
-        run: ls -la ~/downloads
-      - name: commit and push report.pdf
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        run: ls -la report/build
+      - uses: mkrakowitzer/actions-makepdfs@master
         with:
-          source-directory: ~/downloads
-          destination-github-username: ITU-DevOps-Team
-          destination-repository-name: ITU-DevOps
-          user-email: actions@github.com
-          target-branch: development
-
-
-    #  - name: commit and push report.pdf
-    #     uses: EndBug/add-and-commit@v7
-    #     with:
-    #       author_name: github-actions
-    #       author_email: actions@github.com
-    #       message: 'docs: update report.pdf'
-    #       add: 'report/build/report.pdf'
-
-      # - name: push report.pdf to repo
-      #   uses: dmnemec/copy_file_to_another_repo_action@main
+          markdown_dir: report/docs/*'
+          output_dir: report/build
+      - name: check dir
+        run: ls -la report/build
+        
+      # - name: publish markdown as pdf
+      #   uses: shrink/actions-document-publish@v1
+      #   id: publish-document
+      #   with:
+      #     sources: 'report/docs/front/front-page.md report/docs/*'
+      # - name: upload document
+      #   uses: actions/upload-artifact@v2
+      #   id: upload-document
+      #   with:
+      #     name: report.pdf
+      #     path: ${{ steps.publish-document.outputs.pdf }}
+      # - name: download document on runner
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: report.pdf
+      #     path: ~/downloads/report.pdf
+      # - name: check dir
+      #   run: ls -la ~/downloads
+      # - name: commit and push report.pdf
+      #   uses: cpina/github-action-push-to-another-repository@main
       #   env:
       #     API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       #   with:
-      #     source_file: ~/downloads/report.pdf
-      #     destination_repo: ITU-DevOps-Team/ITU-DevOps
-      #     destination_branch: development
-      #     destination_folder: report/build
-      #     user_email: 'actions@github.com'
-      #     user_name: 'github-actions'
-      #     commit_message: 'Update report.pdf'
+      #     source-directory: ~/downloads
+      #     destination-github-username: ITU-DevOps-Team
+      #     destination-repository-name: ITU-DevOps
+      #     user-email: actions@github.com
+      #     target-branch: development
 
