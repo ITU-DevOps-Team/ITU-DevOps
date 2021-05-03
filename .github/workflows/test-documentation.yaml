@@ -34,6 +34,8 @@ jobs:
         run: ls -la ~/downloads
       - name: copy report.pdf to report dir
         run: cp -r ~/downloads $WORKING_DIR/report/build
+      - name: ls report/build
+        run: ls -la $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
           git add report/build
