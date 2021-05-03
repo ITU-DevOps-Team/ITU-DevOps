@@ -23,4 +23,4 @@ jobs:
         id: upload-document
         with:
           name: 'report.pdf'
-          path: 'report/build/'
+          path: ${{ steps.publish-document.outputs.pdf }}
