@@ -2,9 +2,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,python,powershell,c,go
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,python,powershell,c,go
 
-# Eclude report/build dir that should containt the final report
-!report/build
-
 ### C ###
 # Prerequisites
 *.d
@@ -136,6 +133,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+# ignore the report folder with documentation
+!/report/build
 develop-eggs/
 dist/
 downloads/
