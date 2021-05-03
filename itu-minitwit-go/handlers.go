@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"html/template"
 	"net/http"
 	"strings"
 	"time"
-	log "github.com/sirupsen/logrus"
-
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 const DRIVER = "sqlite3"
@@ -25,47 +24,46 @@ const SECRET_KEY = "development key"
 // Prometheus metrics
 var (
 	minitwit_ui_usertimeline_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_usertimeline_requests",
-		Help:        "The count of HTTP requests to the /{username} endpoint of the frontend API.",
+		Name: "minitwit_ui_usertimeline_requests",
+		Help: "The count of HTTP requests to the /{username} endpoint of the frontend API.",
 	})
 	minitwit_ui_personaltimeline_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_personaltimeline_requests",
-		Help:        "The count of HTTP requests to the /personaltimeline endpoint of the frontend API.",
+		Name: "minitwit_ui_personaltimeline_requests",
+		Help: "The count of HTTP requests to the /personaltimeline endpoint of the frontend API.",
 	})
 	minitwit_ui_unfollow_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_unfollow_requests",
-		Help:        "The count of HTTP requests to the /{username}/unfollow endpoint of the frontend API.",
+		Name: "minitwit_ui_unfollow_requests",
+		Help: "The count of HTTP requests to the /{username}/unfollow endpoint of the frontend API.",
 	})
 	minitwit_ui_follow_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_follow_requests",
-		Help:        "The count of HTTP requests to the /{username}/follow endpoint of the frontend API.",
+		Name: "minitwit_ui_follow_requests",
+		Help: "The count of HTTP requests to the /{username}/follow endpoint of the frontend API.",
 	})
 	minitwit_ui_addmessage_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_addmessage_requests",
-		Help:        "The count of HTTP requests to the /add_message endpoint of the frontend API.",
+		Name: "minitwit_ui_addmessage_requests",
+		Help: "The count of HTTP requests to the /add_message endpoint of the frontend API.",
 	})
 	minitwit_ui_homepage_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_homepage_requests",
-		Help:        "The count of HTTP requests to the / (home) endpoint of the frontend API.",
+		Name: "minitwit_ui_homepage_requests",
+		Help: "The count of HTTP requests to the / (home) endpoint of the frontend API.",
 	})
 	minitwit_ui_register_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_register_requests",
-		Help:        "The count of HTTP requests to the /register endpoint of the frontend API.",
+		Name: "minitwit_ui_register_requests",
+		Help: "The count of HTTP requests to the /register endpoint of the frontend API.",
 	})
 	minitwit_ui_login_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_login_requests",
-		Help:        "The count of HTTP requests to the /login endpoint of the frontend API.",
+		Name: "minitwit_ui_login_requests",
+		Help: "The count of HTTP requests to the /login endpoint of the frontend API.",
 	})
 	minitwit_ui_logout_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_logout_requests",
-		Help:        "The count of HTTP requests to the /logout endpoint of the frontend API.",
+		Name: "minitwit_ui_logout_requests",
+		Help: "The count of HTTP requests to the /logout endpoint of the frontend API.",
 	})
 	minitwit_ui_total_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_ui_total_requests",
-		Help:        "The count of HTTP requests to the frontend API.",
+		Name: "minitwit_ui_total_requests",
+		Help: "The count of HTTP requests to the frontend API.",
 	})
 )
-
 
 var templates map[string]*template.Template
 
@@ -100,28 +98,28 @@ func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
 			}
 		} else if r.Method == "POST" {
-				user, err := GetUserByUsername(r.FormValue("username"), db)
+			user, err := GetUserByUsername(r.FormValue("username"), db)
+			if err != nil {
+				errorMsg = "Invalid username"
+				log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid username.")
+			} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
+				errorMsg = "Invalid password"
+				log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid password.")
+			} else {
+				session.AddFlash("You were logged in")
+				session.Values["user_id"] = user.UserID
+				log.WithFields(log.Fields{"user": r.FormValue("username"), "userId": user.UserID}).Info("User successfully logged in.")
+				err = session.Save(r, w)
 				if err != nil {
-					errorMsg = "Invalid username"
-					log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid username.")
-				} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-					errorMsg = "Invalid password"
-					log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid password.")
-				} else {
-					session.AddFlash("You were logged in")
-					session.Values["user_id"] = user.UserID
-					log.WithFields(log.Fields{"user": r.FormValue("username"), "userId" : user.UserID}).Info("User successfully logged in.")
-					err = session.Save(r, w)
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						log.WithFields(log.Fields{"method" : "loginHandler.go"}).Error("Error occured when saving the session")
-						return
-					}
-					http.Redirect(w, r, "/", http.StatusFound)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					log.WithFields(log.Fields{"method": "loginHandler.go"}).Error("Error occured when saving the session")
+					return
 				}
+				http.Redirect(w, r, "/", http.StatusFound)
+			}
 			//renders sign in page again with error
 			viewContent := ViewContent{
-				Error: true,
+				Error:        true,
 				ErrorMessage: errorMsg,
 			}
 
@@ -129,7 +127,7 @@ func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
 			}
-			}
+		}
 	})
 }
 
@@ -161,7 +159,7 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		if r.Method == "GET"{
+		if r.Method == "GET" {
 			if err := templates["register"].Execute(w, nil); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
@@ -181,23 +179,23 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			isEmpty_formPassword := formPassword == ""
 			isEmpty_formPasswordConfirm := formPasswordConfirm == ""
 			incorrectFormat_formEmail := !strings.Contains(formEmail, "@") || !strings.Contains(formEmail, ".")
-			user, _ := GetUserByUsername(formUsername, db);
+			user, _ := GetUserByUsername(formUsername, db)
 			usernameTaken := user.Username == formUsername
 
-			if (isEmpty_formUsername){
+			if isEmpty_formUsername {
 				errorMsg = "username is empty"
-			} else if (isEmpty_formEmail){
+			} else if isEmpty_formEmail {
 				errorMsg = "email is empty"
-			} else if (isEmpty_formPassword){
+			} else if isEmpty_formPassword {
 				errorMsg = "password is empty"
-			} else if (isEmpty_formPasswordConfirm){
+			} else if isEmpty_formPasswordConfirm {
 				errorMsg = "password repeat is empty"
 			} else if incorrectFormat_formEmail {
 				errorMsg = "You have to enter a valid email address"
-			} else if (formPassword != formPasswordConfirm){
+			} else if formPassword != formPasswordConfirm {
 				//Passwords does not match
 				errorMsg = "password and repeated password does not match"
-			} else if usernameTaken{
+			} else if usernameTaken {
 				//Username is already taken
 				errorMsg = "username already exist"
 
@@ -219,7 +217,7 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				db.Create(&user)
 				//renders sign in page again with error
 				viewContent := ViewContent{
-					Success: true,
+					Success:        true,
 					SuccessMessage: "User successfully created",
 				}
 
@@ -231,7 +229,7 @@ func RegisterHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			if errorMsg != "" {
 				//renders register page again with error
 				viewContent := ViewContent{
-					Error: true,
+					Error:        true,
 					ErrorMessage: errorMsg,
 				}
 
@@ -255,7 +253,7 @@ func HomeHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 		viewContent := ViewContent{
 			SignedIn: isLoggedIn,
-			Posts: posts,
+			Posts:    posts,
 		}
 		if err := templates["public_timeline"].Execute(w, viewContent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -427,7 +425,7 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 			formText := r.FormValue("text")
 			isEmpty_formText := formText == ""
 
-			if (isEmpty_formText) {
+			if isEmpty_formText {
 				errorMsg = "post is empty"
 			} else {
 
@@ -439,9 +437,9 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				if formText != "" {
 					message := Message{
 						Author_id: userId.(uint),
-						Text: formText,
-						Pub_date: int(time.Now().Unix()),
-						Flagged: 0,
+						Text:      formText,
+						Pub_date:  int(time.Now().Unix()),
+						Flagged:   0,
 					}
 					result := db.Create(&message)
 
@@ -451,10 +449,10 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				}
 
 				viewContent := ViewContent{
-					SignedIn: isLoggedIn,
-					SameUser: true, //must be
-					Posts:    GetPostsByUser(currentUserName, db),
-					Username: currentUserName,
+					SignedIn:       isLoggedIn,
+					SameUser:       true, //must be
+					Posts:          GetPostsByUser(currentUserName, db),
+					Username:       currentUserName,
 					Success:        true,
 					SuccessMessage: "Post successfully created",
 				}
@@ -464,7 +462,7 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 				}
 			}
 
-			if errorMsg != ""{
+			if errorMsg != "" {
 				//display error
 				viewContent := ViewContent{
 					Error:        true,
@@ -490,7 +488,7 @@ func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		isLoggedIn := userId != "" && userId != nil
 		currentUserName := "" //username of the current user signed in
 
-		if isLoggedIn{
+		if isLoggedIn {
 			user, err := GetUserById(userId.(uint), db)
 			checkErr(err)
 			currentUserName = user.Username
@@ -500,23 +498,22 @@ func UserTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 		usernameVisited := vars["username"]
 
 		//check if username visited exists
-		if !CheckUsernameExists(usernameVisited, db){
+		if !CheckUsernameExists(usernameVisited, db) {
 			http.Redirect(w, r, "/", 302)
 		}
 
 		//if visited user is same as logged in user redirect to personal timeline
-		if currentUserName == usernameVisited{
+		if currentUserName == usernameVisited {
 			PersonalTimeline(store, db)
 		}
 
 		viewContent := ViewContent{
-			SignedIn: isLoggedIn,
-			SameUser: currentUserName == usernameVisited,
-			Posts: GetPostsByUser(usernameVisited, db),
-			Username: usernameVisited,
+			SignedIn:         isLoggedIn,
+			SameUser:         currentUserName == usernameVisited,
+			Posts:            GetPostsByUser(usernameVisited, db),
+			Username:         usernameVisited,
 			AlreadyFollowing: CheckIfUserIsFollowed(currentUserName, usernameVisited, db),
 		}
-
 
 		if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

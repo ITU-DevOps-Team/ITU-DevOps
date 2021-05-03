@@ -77,8 +77,6 @@ func init() {
 	prometheus.MustRegister(minitwit_ui_usertimeline_requests)
 }
 
-
-
 func main() {
 	err := godotenv.Load("../.env")
 	if err != nil {
@@ -97,19 +95,14 @@ func main() {
 	}
 
 	log.SetFormatter(&log.JSONFormatter{
-		FieldMap: log.FieldMap{                               
-			log.FieldKeyTime:  "@timestamp",            
-			log.FieldKeyMsg:   "message",
+		FieldMap: log.FieldMap{
+			log.FieldKeyTime: "@timestamp",
+			log.FieldKeyMsg:  "message",
 		},
 	})
 	// log.SetLevel(log.Info)
 
-
-
-
-
-	
-	file, err := os.OpenFile("/usr/share/filebeat/logs/out.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	file, err := os.OpenFile("/usr/share/filebeat/logs/out.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err == nil {
 		log.SetOutput(file)
 	}
@@ -121,7 +114,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(BeforeRequestMiddleware(store, gorm))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("public/"))))
-	
+
 	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")

@@ -33,14 +33,14 @@ type ViewPost struct {
 }
 
 type ViewContent struct {
-	SignedIn bool
-	Posts []ViewPost
-	User User
-	Error bool
-	Success bool
-	ErrorMessage string
-	SuccessMessage string
-	SameUser bool //Personal timeline
-	Username string
+	SignedIn         bool
+	Posts            []ViewPost
+	User             User
+	Error            bool
+	Success          bool
+	ErrorMessage     string
+	SuccessMessage   string
+	SameUser         bool //Personal timeline
+	Username         string
 	AlreadyFollowing bool
 }
