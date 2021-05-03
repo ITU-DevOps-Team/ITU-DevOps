@@ -77,56 +77,66 @@ func LoadTemplates() {
 	templates["public_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/public_timeline.gohtml"))
 }
 
+func LoginPost(session *sessions.Session, db *gorm.DB, w *http.ResponseWriter, r *http.Request){
+	user, err := GetUserByUsername(r.FormValue("username"), db)
+	var errorMsg string
+
+	if err != nil {
+		errorMsg = "Invalid username"
+		log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid username.")
+	} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
+		errorMsg = "Invalid password"
+		log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid password.")
+	} else {
+		session.AddFlash("You were logged in")
+		session.Values["user_id"] = user.UserID
+		log.WithFields(log.Fields{"user": r.FormValue("username"), "userId": user.UserID}).Info("User successfully logged in.")
+		err = session.Save(r, *w)
+		if err != nil {
+			http.Error(*w, err.Error(), http.StatusInternalServerError)
+			log.WithFields(log.Fields{"method": "loginHandler.go"}).Error("Error occured when saving the session")
+			return
+		}
+		http.Redirect(*w, r, "/", http.StatusFound)
+	}
+
+	//renders sign in page again with error
+	viewContent := ViewContent{
+		Error:        true,
+		ErrorMessage: errorMsg,
+	}
+	if err := templates["login"].Execute(*w, viewContent); err != nil {
+		http.Error(*w, err.Error(), http.StatusInternalServerError)
+		log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
+	}
+}
+
+func LoginGet(w *http.ResponseWriter) {
+	if err := templates["login"].Execute(*w, nil); err != nil {
+		http.Error(*w, err.Error(), http.StatusInternalServerError)
+		log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
+	}
+}
+
+func LoggedIn(w *http.ResponseWriter, r *http.Request) {
+	fmt.Println("user already signed in -> redirecting to /")
+	http.Redirect(*w, r, "/", http.StatusFound)
+}
+
 //LoginHandler ...
 func LoginHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		minitwit_ui_login_requests.Inc()
 		session, _ := store.Get(r, "session_cookie")
-
 		userId := session.Values["user_id"]
 		isLoggedIn := userId != "" && userId != nil
 		if isLoggedIn {
-			fmt.Println("user already signed in -> redirecting to /")
-			http.Redirect(w, r, "/", http.StatusFound)
+			LoggedIn(&w, r)
 		}
-
-		var errorMsg string
-
 		if r.Method == "GET" {
-			if err := templates["login"].Execute(w, nil); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
-			}
+			LoginGet(&w)
 		} else if r.Method == "POST" {
-			user, err := GetUserByUsername(r.FormValue("username"), db)
-			if err != nil {
-				errorMsg = "Invalid username"
-				log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid username.")
-			} else if err = bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-				errorMsg = "Invalid password"
-				log.WithFields(log.Fields{"user": r.FormValue("username")}).Error("User entered invalid password.")
-			} else {
-				session.AddFlash("You were logged in")
-				session.Values["user_id"] = user.UserID
-				log.WithFields(log.Fields{"user": r.FormValue("username"), "userId": user.UserID}).Info("User successfully logged in.")
-				err = session.Save(r, w)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					log.WithFields(log.Fields{"method": "loginHandler.go"}).Error("Error occured when saving the session")
-					return
-				}
-				http.Redirect(w, r, "/", http.StatusFound)
-			}
-			//renders sign in page again with error
-			viewContent := ViewContent{
-				Error:        true,
-				ErrorMessage: errorMsg,
-			}
-
-			if err := templates["login"].Execute(w, viewContent); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.WithFields(log.Fields{}).Error("Error occured when executing the login template.")
-			}
+			LoginPost(session, db, &w, r)
 		}
 	})
 }
