@@ -168,8 +168,7 @@ func RegisterGet(w *http.ResponseWriter) {
 	}
 }
 
-func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
-	//parsing form posted by user
+func GetFormError(db *gorm.DB, r *http.Request) string {
 	r.ParseForm()
 	var errorMsg string
 
@@ -202,17 +201,28 @@ func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
 	} else if usernameTaken {
 		//Username is already taken
 		errorMsg = "username already exist"
+	}
+	return errorMsg
+}
 
-	} else {
+func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
+	//parsing form posted by user
+	var errorMsg = GetFormError(db, r)
+
+	 if errorMsg == "" {
 		//Sign up user
-		hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
+		 formPassword := r.FormValue("password")
+		 hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
 
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		user := User{
+		 formUsername := r.FormValue("username")
+		 formEmail := r.FormValue("email")
+
+		 user := User{
 			Username: formUsername,
 			Email:    formEmail,
 			PwHash:   string(hash),
@@ -228,9 +238,7 @@ func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
 		if err := templates["login"].Execute(*w, viewContent); err != nil {
 			http.Error(*w, err.Error(), http.StatusInternalServerError)
 		}
-	}
-
-	if errorMsg != "" {
+	} else {
 		//renders register page again with error
 		viewContent := ViewContent{
 			Error:        true,
