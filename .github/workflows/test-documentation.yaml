@@ -25,6 +25,7 @@ jobs:
         with:
           source_file: report.pdf
           destination_repo: ITU-DevOps-Team/ITU-DevOps
+          destination_branch: development
           destination_folder: report/build
           user_email: 'actions@github.com'
           user_name: 'github-actions'
