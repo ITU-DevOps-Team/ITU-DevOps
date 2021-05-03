@@ -23,15 +23,12 @@ jobs:
         run: ls -la report/build
 
       - name: commit and push report.pdf
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source-directory: report/build
-          destination-github-username: ITU-DevOps-Team
-          destination-repository-name: ITU-DevOps
-          user-email: actions@github.com
-          target-branch: test/report-build-workflow
+        run: |
+          git add report/build
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@noreply.github.com'
+          git commit -m 'chore: update report.pf'
+          git push
 
 
       # - name: publish markdown as pdf
