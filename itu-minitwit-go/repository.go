@@ -27,7 +27,7 @@ func GetPublicPosts(numberOfPosts int, db *gorm.DB) []ViewPost {
 	return ConvertMessagesToViewPosts(posts, db)
 }
 
-func GetPostsByUser(username string, db *gorm.DB) []ViewPost{
+func GetPostsByUser(username string, db *gorm.DB) []ViewPost {
 	var posts []Message
 	db.Table(
 		"messages").Order(
@@ -55,24 +55,24 @@ func CheckIfUserIsFollowed(who string, whom string, db *gorm.DB) bool {
 	follower := []Follower{}
 	result := db.Table(
 		"followers").Where(
-			"who_id = ? AND whom_id = ?", whoUser.UserID, whomUser.UserID).Scan(&follower)
+		"who_id = ? AND whom_id = ?", whoUser.UserID, whomUser.UserID).Scan(&follower)
 	fmt.Println(result)
 	return len(follower) > 1
 }
 
-func ConvertMessagesToViewPosts(messages []Message, db *gorm.DB) []ViewPost{
+func ConvertMessagesToViewPosts(messages []Message, db *gorm.DB) []ViewPost {
 	var postSlice []ViewPost
 
 	for _, message := range messages {
 		user, _ := GetUserById(message.Author_id, db)
 
 		post := ViewPost{
-			Username:      user.Username,
-			Message_id:	   message.Message_id,
-			Author_id:	   message.Author_id,
-			Text:          message.Text,
-			Pub_date:	   getTimeFromTimestamp(message.Pub_date),
-			Flagged:       message.Flagged,
+			Username:   user.Username,
+			Message_id: message.Message_id,
+			Author_id:  message.Author_id,
+			Text:       message.Text,
+			Pub_date:   getTimeFromTimestamp(message.Pub_date),
+			Flagged:    message.Flagged,
 		}
 		postSlice = append(postSlice, post)
 	}

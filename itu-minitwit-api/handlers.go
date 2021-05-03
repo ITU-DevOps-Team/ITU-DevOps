@@ -14,68 +14,64 @@ import (
 	"gorm.io/gorm"
 )
 
-
 //Prometheus metrics
 var (
 	minitwit_api_register_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:        "minitwit_api_register_requests",
-		Help:        "The count of requests to the /register endpoint of the backend API",
+		Name: "minitwit_api_register_requests",
+		Help: "The count of requests to the /register endpoint of the backend API",
 	})
 	minitwit_api_messages_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:				 "minitwit_api_messages_requests",
-		Help:				 "The count of requests to the /msgs endpoint of the backend API",
+		Name: "minitwit_api_messages_requests",
+		Help: "The count of requests to the /msgs endpoint of the backend API",
 	})
 	minitwit_api_messages_per_user_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:				 "minitwit_api_messages_per_user_requests",
-		Help:				 "The count of requests to the /msgs/{username} endpoint of the backend API",
+		Name: "minitwit_api_messages_per_user_requests",
+		Help: "The count of requests to the /msgs/{username} endpoint of the backend API",
 	})
 	minitwit_api_follow_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:				 "minitwit_api_follow_requests",
-		Help:				 "The count of requests to the /fllws/{username} endpoint of the backend API",
+		Name: "minitwit_api_follow_requests",
+		Help: "The count of requests to the /fllws/{username} endpoint of the backend API",
 	})
 	minitwit_api_total_requests = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:				 "minitwit_api_total_requests",
-		Help:				 "The total count of requests to the backend API",
+		Name: "minitwit_api_total_requests",
+		Help: "The total count of requests to the backend API",
 	})
 	minitwit_api_latest_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_latest_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the latest middleware of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_latest_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the latest middleware of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_register_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_register_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the RegisterApiHandler of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_register_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the RegisterApiHandler of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_messages_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_messages_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the MessagesHandler of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_messages_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the MessagesHandler of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_messages_per_user_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_messages_per_user_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the MessagesPerUserHandler of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_messages_per_user_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the MessagesPerUserHandler of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_follow_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_follow_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the FollowHandler of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_follow_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the FollowHandler of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_authentication_middleware_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_authentication_middleware_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the AuthenticationMiddleware of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_authentication_middleware_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the AuthenticationMiddleware of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
 	minitwit_api_latest_middleware_execution_time_in_ns = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:				 "minitwit_api_latest_middleware_execution_time_in_ns",
-		Help:				 "Histogram of the execution time of the LatestMiddleware of the backend API ",
-		Buckets:		 []float64{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000},
+		Name:    "minitwit_api_latest_middleware_execution_time_in_ns",
+		Help:    "Histogram of the execution time of the LatestMiddleware of the backend API ",
+		Buckets: []float64{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000},
 	})
-
 )
-
-
 
 func LatestHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +149,7 @@ func RegisterApiHandler(db *gorm.DB) http.Handler {
 
 func MessagesHandler(db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var t0 = time.Now();
+		var t0 = time.Now()
 		minitwit_api_messages_requests.Inc()
 
 		numberOfMessagesHeaderResult := r.URL.Query().Get("no")
@@ -456,11 +452,9 @@ func LatestMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 
 		mdfn := func(w http.ResponseWriter, r *http.Request) {
 
-
 			//If the request comes from Prometheus, skip the latestmiddleware
 			agent := r.Header.Get("User-Agent")
-      if (strings.Split(agent,"/")[0] != "Prometheus"){
-
+			if strings.Split(agent, "/")[0] != "Prometheus" {
 
 				keys, ok := r.URL.Query()["latest"]
 
@@ -472,7 +466,6 @@ func LatestMiddleware(db *gorm.DB) func(http.Handler) http.Handler {
 					AddLatest(latestObj, db)
 					log.Println(latest)
 				}
-
 
 			}
 

@@ -9,10 +9,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 const DRIVER = "sqlite3"
@@ -84,9 +84,7 @@ func init() {
 	prometheus.MustRegister(minitwit_api_latest_middleware_execution_time_in_ns)
 }
 
-
 func main() {
-
 
 	err := godotenv.Load("../.env")
 	if err != nil {
@@ -112,7 +110,7 @@ func main() {
 	r.Handle("/latest", LatestHandler(gorm)).Methods("GET")
 	r.Handle("/register", RegisterApiHandler(gorm)).Methods("POST")
 	r.Handle("/msgs", MessagesHandler(gorm)).Methods("GET")
-	r.Handle("/metrics",promhttp.Handler())
+	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/msgs/{username}", MessagesPerUserHandler(gorm)).Methods("GET", "POST")
 	r.Handle("/fllws/{username}", FollowHandler(gorm)).Methods("GET", "POST")
 

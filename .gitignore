@@ -133,6 +133,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+# ignore the report folder with documentation
+!/report/build
 develop-eggs/
 dist/
 downloads/

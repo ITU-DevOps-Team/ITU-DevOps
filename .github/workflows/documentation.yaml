@@ -1,0 +1,26 @@
+name: generate report.pdf
+
+on:
+  push:
+    branches: 
+      - development
+
+jobs:
+  generate-report:
+    name: generate report.pdf based on the markdown docs
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: publish markdown as pdf
+        uses: shrink/actions-document-publish@v1
+        id: publish-document
+        with:
+          sources: 'report/docs/front/front-page.md report/docs/*'
+
+      - name: upload document
+        uses: actions/upload-artifact@v2
+        id: upload-document
+        with:
+          name: 'report.pdf'
+          path: ${{ steps.publish-document.outputs.pdf }}
