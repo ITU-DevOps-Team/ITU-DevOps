@@ -17,26 +17,28 @@ jobs:
         id: publish-document
         with:
           sources: 'report/docs/front/front-page.md report/docs/*'
-      - name: upload document
-        uses: actions/upload-artifact@v2
-        id: upload-document
-        with:
-          name: report.pdf
-          path: ${{ steps.publish-document.outputs.pdf }}
-      - name: download document on runner
-        uses: actions/download-artifact@v2
-        with:
-          name: report.pdf
-          path: ~/downloads/report.pdf
       - name: check dir
-        run: ls -la ~/downloads
-      - name: commit and push report.pdf
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: github-actions
-          author_email: actions@github.com
-          message: 'docs: update report.pdf'
-          add: 'report/build/report.pdf'
+        run: ls -la .
+      # - name: upload document
+      #   uses: actions/upload-artifact@v2
+      #   id: upload-document
+      #   with:
+      #     name: report.pdf
+      #     path: ${{ steps.publish-document.outputs.pdf }}
+      # - name: download document on runner
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: report.pdf
+      #     path: ~/downloads/report.pdf
+      # - name: check dir
+      #   run: ls -la ~/downloads
+      # - name: commit and push report.pdf
+      #   uses: EndBug/add-and-commit@v7
+      #   with:
+      #     author_name: github-actions
+      #     author_email: actions@github.com
+      #     message: 'docs: update report.pdf'
+      #     add: 'report/build/report.pdf'
 
       # - name: push report.pdf to repo
       #   uses: dmnemec/copy_file_to_another_repo_action@main
