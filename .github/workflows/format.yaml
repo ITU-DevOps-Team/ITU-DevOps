@@ -15,10 +15,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: run go fmt 
-        run: |
-          cd itu-minitwit-go
-          go fmt
+      - name: check minitwit code formatting
+        uses: Jerome1337/gofmt-action@v1.0.4
+        with:
+          gofmt-path: './itu-minitwit-go'
   
   format-minitwit-api:
     name: check formatting for minitwit-api
@@ -26,7 +26,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: run go fmt 
-        run: |
-          cd itu-minitwit-api
-          go fmt
+      - name: check minitwit-api code formatting
+        uses: Jerome1337/gofmt-action@v1.0.4
+        with:
+          gofmt-path: './itu-minitwit-api'
+
