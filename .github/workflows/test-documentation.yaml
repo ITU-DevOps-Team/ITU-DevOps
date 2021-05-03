@@ -38,7 +38,7 @@ jobs:
         run: ls -la $WORKING_DIR/report/build
       - name: commit and push report.pdf
         run: |
-          pdw
+          pwd
           git add report/build
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@noreply.github.com'
