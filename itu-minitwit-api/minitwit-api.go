@@ -3,16 +3,15 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
+	"os"
 )
 
 const DRIVER = "sqlite3"
@@ -30,6 +29,21 @@ func initDb(dsn string) (*gorm.DB, error) {
 	}
 
 	return db, sql.Ping()
+}
+// Initialize prometheus
+func init() {
+	prometheus.MustRegister(minitwit_api_register_requests)
+	prometheus.MustRegister(minitwit_api_messages_requests)
+	prometheus.MustRegister(minitwit_api_messages_per_user_requests)
+	prometheus.MustRegister(minitwit_api_follow_requests)
+	prometheus.MustRegister(minitwit_api_total_requests)
+	prometheus.MustRegister(minitwit_api_latest_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_register_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_messages_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_messages_per_user_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_follow_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_authentication_middleware_execution_time_in_ns)
+	prometheus.MustRegister(minitwit_api_latest_middleware_execution_time_in_ns)
 }
 
 func ReadDBVariables() (string, error) {
@@ -66,22 +80,6 @@ func ReadDBVariables() (string, error) {
 	}
 
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbPort, sslMode), err
-}
-
-// Initialize prometheus
-func init() {
-	prometheus.MustRegister(minitwit_api_register_requests)
-	prometheus.MustRegister(minitwit_api_messages_requests)
-	prometheus.MustRegister(minitwit_api_messages_per_user_requests)
-	prometheus.MustRegister(minitwit_api_follow_requests)
-	prometheus.MustRegister(minitwit_api_total_requests)
-	prometheus.MustRegister(minitwit_api_latest_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_register_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_messages_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_messages_per_user_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_follow_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_authentication_middleware_execution_time_in_ns)
-	prometheus.MustRegister(minitwit_api_latest_middleware_execution_time_in_ns)
 }
 
 func main() {
