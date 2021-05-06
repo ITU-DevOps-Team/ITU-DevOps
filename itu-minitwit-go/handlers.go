@@ -416,6 +416,71 @@ func UnfollowUserHandler(store *sessions.CookieStore, db *gorm.DB) http.Handler 
 	})
 }
 
+func GetPersonalTimeline(db *gorm.DB, w *http.ResponseWriter, isLoggedIn bool, currentUserName string) {
+	viewContent := ViewContent{
+		SignedIn: isLoggedIn,
+		SameUser: true, //must be
+		Posts:    GetPostsByUser(currentUserName, db),
+		Username: currentUserName,
+	}
+
+	if err := templates["personal_timeline"].Execute(*w, viewContent); err != nil {
+		http.Error(*w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func PostPersonalTimeline(db *gorm.DB, r *http.Request, w *http.ResponseWriter, isLoggedIn bool, currentUserName string, userId uint) {
+	r.ParseForm()
+	var errorMsg string
+	formText := r.FormValue("text")
+	if formText == "" {
+		errorMsg = "post is empty"
+	} else {
+		if formText != "" {
+			message := Message{
+				Author_id: userId,
+				Text:      formText,
+				Pub_date:  int(time.Now().Unix()),
+				Flagged:   0,
+			}
+			result := db.Create(&message)
+
+			if result.Error != nil {
+				log.Fatal(result.Error)
+			}
+		}
+
+		viewContent := ViewContent{
+			SignedIn:       isLoggedIn,
+			SameUser:       true, //must be
+			Posts:          GetPostsByUser(currentUserName, db),
+			Username:       currentUserName,
+			Success:        true,
+			SuccessMessage: "Post successfully created",
+		}
+
+		if err := templates["personal_timeline"].Execute(*w, viewContent); err != nil {
+			http.Error(*w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	if errorMsg != "" {
+		//display error
+		viewContent := ViewContent{
+			Error:        true,
+			ErrorMessage: errorMsg,
+		}
+
+		if err := templates["personal_timeline"].Execute(*w, viewContent); err != nil {
+			http.Error(*w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
+func IsLoggedIn(userId interface{}) bool {
+	return userId != "" && userId != nil
+}
+
 func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -423,8 +488,7 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 		session, _ := store.Get(r, "session_cookie")
 		userId := session.Values["user_id"]
-		isLoggedIn := userId != "" && userId != nil
-		currentUserName := "" //username of the current user signed in
+		isLoggedIn := IsLoggedIn(userId)
 
 		//redirect to public if not logged in
 		if !isLoggedIn {
@@ -433,74 +497,16 @@ func PersonalTimeline(store *sessions.CookieStore, db *gorm.DB) http.Handler {
 
 		user, err := GetUserById(userId.(uint), db)
 		checkErr(err)
-		currentUserName = user.Username
+		currentUserName := user.Username //username of the current user signed in
 
 		if r.Method == "GET" {
-			viewContent := ViewContent{
-				SignedIn: isLoggedIn,
-				SameUser: true, //must be
-				Posts:    GetPostsByUser(currentUserName, db),
-				Username: currentUserName,
-			}
-
-			if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			GetPersonalTimeline(db, &w, isLoggedIn, currentUserName)
 		} else if r.Method == "POST" {
-			r.ParseForm()
-			var errorMsg string
-			formText := r.FormValue("text")
-			isemptyFormtext := formText == ""
-
-			if isemptyFormtext {
-				errorMsg = "post is empty"
-			} else {
-
-				if userId == nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				if formText != "" {
-					message := Message{
-						Author_id: userId.(uint),
-						Text:      formText,
-						Pub_date:  int(time.Now().Unix()),
-						Flagged:   0,
-					}
-					result := db.Create(&message)
-
-					if result.Error != nil {
-						log.Fatal(result.Error)
-					}
-				}
-
-				viewContent := ViewContent{
-					SignedIn:       isLoggedIn,
-					SameUser:       true, //must be
-					Posts:          GetPostsByUser(currentUserName, db),
-					Username:       currentUserName,
-					Success:        true,
-					SuccessMessage: "Post successfully created",
-				}
-
-				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
+			if userId == nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
 			}
-
-			if errorMsg != "" {
-				//display error
-				viewContent := ViewContent{
-					Error:        true,
-					ErrorMessage: errorMsg,
-				}
-
-				if err := templates["personal_timeline"].Execute(w, viewContent); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-			}
-
+			PostPersonalTimeline(db, r, &w, isLoggedIn, currentUserName, userId.(uint))
 		}
 	})
 }
