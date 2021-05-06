@@ -3,9 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -118,7 +119,7 @@ func main() {
 	r.Handle("/", HomeHandler(store, gorm)).Methods("GET")
 	r.Handle("/login", LoginHandler(store, gorm)).Methods("GET", "POST")
 	r.Handle("/register", RegisterHandler(store, gorm)).Methods("GET", "POST")
-	r.Handle("/logout", LogoutHandler(store, gorm)).Methods("GET")
+	r.Handle("/logout", LogoutHandler(store)).Methods("GET")
 	r.Handle("/add_message", AddMessageHandler(store, gorm)).Methods("POST")
 	r.Handle("/personaltimeline", PersonalTimeline(store, gorm)).Methods("GET", "POST")
 	r.Handle("/metrics", promhttp.Handler())
