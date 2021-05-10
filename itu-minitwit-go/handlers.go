@@ -77,7 +77,7 @@ func LoadTemplates() {
 	templates["public_timeline"] = template.Must(template.ParseFiles(layoutTemplate, "templates/public_timeline.gohtml"))
 }
 
-func LoginPost(session *sessions.Session, db *gorm.DB, w *http.ResponseWriter, r *http.Request){
+func LoginPost(session *sessions.Session, db *gorm.DB, w *http.ResponseWriter, r *http.Request) {
 	user, err := GetUserByUsername(r.FormValue("username"), db)
 	var errorMsg string
 
@@ -209,20 +209,20 @@ func RegisterPost(db *gorm.DB, r *http.Request, w *http.ResponseWriter) {
 	//parsing form posted by user
 	var errorMsg = GetFormError(db, r)
 
-	 if errorMsg == "" {
+	if errorMsg == "" {
 		//Sign up user
-		 formPassword := r.FormValue("password")
-		 hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
+		formPassword := r.FormValue("password")
+		hash, err := bcrypt.GenerateFromPassword([]byte(formPassword), bcrypt.MinCost)
 
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		 formUsername := r.FormValue("username")
-		 formEmail := r.FormValue("email")
+		formUsername := r.FormValue("username")
+		formEmail := r.FormValue("email")
 
-		 user := User{
+		user := User{
 			Username: formUsername,
 			Email:    formEmail,
 			PwHash:   string(hash),
