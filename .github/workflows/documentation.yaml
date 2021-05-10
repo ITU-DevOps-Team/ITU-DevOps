@@ -19,7 +19,7 @@ jobs:
         uses: shrink/actions-document-publish@v1
         id: publish-document
         with:
-          sources: 'report/docs/front/front-page.md report/docs/*'
+          sources: 'report/docs/front/front-page.md report/docs/content/systems-perspective.md report/docs/*'
       - name: upload document
         uses: actions/upload-artifact@v2
         id: upload-document
