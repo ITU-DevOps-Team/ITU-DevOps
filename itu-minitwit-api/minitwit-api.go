@@ -30,6 +30,7 @@ func initDb(dsn string) (*gorm.DB, error) {
 
 	return db, sql.Ping()
 }
+
 // Initialize prometheus
 func init() {
 	prometheus.MustRegister(minitwit_api_register_requests)

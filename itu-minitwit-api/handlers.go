@@ -209,7 +209,7 @@ func MessagesHandler(db *gorm.DB) http.Handler {
 	})
 }
 
-func UserHandlerGet(db *gorm.DB, w *http.ResponseWriter, r *http.Request, t0 time.Time, numberOfMessages int, ) {
+func UserHandlerGet(db *gorm.DB, w *http.ResponseWriter, r *http.Request, t0 time.Time, numberOfMessages int) {
 	username := mux.Vars(r)["username"]
 	user, err := GetUserByUsername(username, db)
 	if err != nil {
@@ -319,8 +319,6 @@ func MessagesPerUserHandler(db *gorm.DB) http.Handler {
 		}
 	})
 }
-
-
 
 func FollowUser(db *gorm.DB, w *http.ResponseWriter, requestBody body, user User, t0 time.Time) {
 	userToFollow, err := GetUserByUsername(requestBody.Follow, db)
