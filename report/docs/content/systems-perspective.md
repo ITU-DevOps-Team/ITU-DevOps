@@ -16,7 +16,7 @@ The production system is deployed to three nodes on DigitalOcean. One node acts 
 
 We chose Docker Swarm as the cluster orchestration technology because
 
-- As Swarm is a Docker product, it uses the standard Docker API and networking. Since we were already virtualizing our runtime environment using Docker and Docker Compose, the transition to Swarm was relatively painless.
+- As Swarm is a Docker product, it uses the standard Docker API and networking. Since we were already virtualizing our production environment using Docker and Docker Compose, the transition to Swarm was relatively painless.
 - It has a lightweight installing and is simple to deploy as Swarm mode is already included in the Docker engine.
 - *Maybe more*
 
