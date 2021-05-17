@@ -11,6 +11,9 @@
     - That is, either the structure of of mono-repository or organization of artifacts across repositories.
     - In essence, it has to be be clear what is stored where and why.
   - Applied branching strategy.
+
+A feature based branching strategy has been used for this project, that is anytime a team member desires to add a new feature, a new branch with the name of that feature is created. Once the changes has been implemented a pull-request is made and reviewed by another team member before it is merged with the development branch. 
+
   - Applied development process and tools supporting it
     - For example, how did you use issues, Kanban boards, etc. to organize open tasks
   - How do you monitor your systems and what precisely do you monitor?
