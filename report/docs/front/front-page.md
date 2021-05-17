@@ -5,7 +5,7 @@
 
 ### Project assignment by:
 | name | email |
-| ----- | ----- | 
+| ----- | ----- |
 | Vlad Croitoru | vlcr@itu.dk |
 | Anders Friis Kaas | anfk@itu.dk |
 | Rasmus Dilling Møller | rdmo@itu.dk |
@@ -13,5 +13,5 @@
 | Jonas William Gohn | jgoh@itu.dk |
 
 <div style="page-break-after: always; visibility: hidden"> 
-\pagebreak 
+    \pagebreak
 </div>
