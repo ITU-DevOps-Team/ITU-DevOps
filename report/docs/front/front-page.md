@@ -12,4 +12,6 @@
 | Sean Wachs | sewa@itu.dk |
 | Jonas William Gohn | jgoh@itu.dk |
 
-\pagebreak
+<div style="page-break-after: always; visibility: hidden"> 
+\pagebreak 
+</div>
