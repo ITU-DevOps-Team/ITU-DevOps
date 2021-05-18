@@ -67,11 +67,11 @@ On a high level, the whole system depends on the following technologies:
   - They both exist as Docker images in Docker Hub, which makes deployment easy. 
   - Grafana offers very customizable dashboards for visualizing application performance.
 
-- **Sonarqube**
+- **SonarQube**
 
-  The codebase is statically analyzed by Sonarqube. The reasons we went with Sonarqube are
+  The codebase is statically analyzed by SonarQube. The reasons we went with SonarQube are
 
-  - Sonarqube is very feature-packed. It has support for identification of duplicated code, unit testing, code complexity, code smells and much more.
+  - SonarQube is very feature-packed. It has support for identification of duplicated code, unit testing, code complexity, code smells and much more.
   - It integrates well with popular IDEs such as Eclipse and Visual Studio.
 
 ### Go libraries
@@ -97,5 +97,30 @@ On the lowest level, our Go applications depend on the following libraries:
 - **bcrypt** - used to hash passwords.
 - **html/template** - used for generating valid HTML from templates
 
+## Current state of system
 
+### Code base
 
+We use the static analysis service SonaryQube for automatic code review. After removing unnecessary files and refactoring the system, we received the the following ratings from SonarQube:
+
+<img src="./../../images/code_quality.png"/>
+
+This indicates that our system is relatively bug-free. 
+
+## License
+
+After reviewing all our dependencies, we found the following six different licenses that our license had to comply with:
+
+- PostgrSQL License
+  - a permissive license that allows anyone to use, copy, modify and distribute PostgreSQL.
+- MIT License
+  - A very permissive license with high license compatibility.
+- Apache License 2.0
+  - a permissive, free software license.
+- AGPLv3
+  - a free software license. However, this has a strong copyleft clause, which requires us to use AGPLv3 for our project as well.
+- GNU Lesser General Public License
+  - General permissive license
+- BSD-3-Clause License - very permissive license.
+
+Because of the copyleft clause of AGPLv3, we used that as our license.
