@@ -6,12 +6,26 @@ The core of the Minitwit application is written in Go. It is split into a fronte
 
 ## Architecture
 
-The high level view of the architecture can be provided by the context diagrams for both `minitwit` and `minitwit-api`.
+During the course we had to rewrite both the user facing app - `minitwit` and the one used for the simulator - `minitwit-api`. The high level architecture can be provided by context diagrams.
 
 ![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
-![minitwit-api context diagram](../../images/module-minitwit-api.png)
-![minitwit-api context diagram](../../report/images/module-minitwit-api.png)
-![minitwit-api context diagram](./report/images/module-minitwit-api.png)
+
+`minitwit` has several components that can be divided logically and this is how we did it. 
+
+- `main` employs a chain of responsibility pattern to perform some middleware logic such as authentication and routing incoming requests to the appropriate `handlers`.
+- `handlers` perform some kind of logic by calling database/sql related procedures from `repositories` then generate an html doc based on the `templates`.
+- `repositories` contain database related procedures that read or mutate data, `repositories` may aswell call certain `helper` functions to format or sanitize data and `models` that contain the mapping models of database schemas to Go structures.
+- `helpers` has functions that format or sanitize data related to database procedures.
+- `models` has mapping models of the database schemas to Go structures.
+
+![minitwit-api context diagram](https://i.imgur.com/ZFkpbkK.png)
+
+`minitwit-api` is more straightforward than `minitwit` since it does not bother with generating html docs to send back to the user agent. 
+
+- `main` similarly to `minitwit`, the `main` functions authenticates requests and updates the latest value via middleware and then routes request to the necesarry handler functions isolated in `handlers` component.
+- `handlers` perform some kind of logic by calling database/sql related procedures from `repositories`, may use models to map database data to Go structures.
+- `repositories` contains database related procedures that read or mutate data.
+- `models` contains mapping models of the database schemas to Go structures.
 
 ## Dependencies
 
@@ -105,6 +119,3 @@ On the lowest level, our Go applications depend on the following libraries:
 - **promhttp** - this submodule of prometheus is used to expose an endpoint called /metrics that is used by Grafana.
 - **bcrypt** - used to hash passwords.
 - **html/template** - used for generating valid HTML from templates
-
-
-
