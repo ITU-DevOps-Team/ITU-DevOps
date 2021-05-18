@@ -4,9 +4,18 @@
 
 
   - How do you interact as developers?
+
+We interacted with each other mainly through Teams voice and instant chat where we planned meetings and aligned tasks. After our meetings we would use the built-in Github features of the kanban board and issues section.
+
   - How is the team organized?
+
+Our team is organized as a flat hierarchy where we would debate on issues and taking joint decisions. There was no clear manager or leader during this process but due to the relatively small scope of the project this did not feel like an issue.
+
   - A complete description of stages and tools included in the CI/CD chains.
     -  That is, including deployment and release of your systems.
+
+
+    
   - Organization of your repositor(ies).
     - That is, either the structure of of mono-repository or organization of artifacts across repositories.
     - In essence, it has to be be clear what is stored where and why.
@@ -17,7 +26,7 @@ A feature based branching strategy has been used for this project, that is anyti
   - Applied development process and tools supporting it
     - For example, how did you use issues, Kanban boards, etc. to organize open tasks
 
-Distribution of tasks among the team members has been done through GitHub's issues. When new tasks came up they were added as issues on GitHub and assigned a team memnber. 
+Distribution of tasks among the team members has been done through GitHub's issues and a Kanban board. When new tasks came up they were added as issues on GitHub and assigned a team memnber. These issues were tracked on the Kanban board using a standard layout containing sections for TODO, In Progress, Under Review and Done. By using both Github Projects and Github Issues we have seamless integration between issues and kanban tasks which gives us a better overview of the project status.
 
   - How do you monitor your systems and what precisely do you monitor?
   - What do you log in your systems and how do you aggregate logs?
@@ -27,4 +36,6 @@ The goal for the project was to implement and utilize the ELK stack for analysin
   - Brief results of the security assessment.
   - Applied strategy for scaling and load balancing.
 
-In order to secure the minitwit application for large amounts of users and operations and ensure a high level of availability the system has been set up using Docker in Swarm mode. The system is operating with a single swarm manger connected to two worker nodes forming a cluster. With Docker Swarm you can simply add more replicas of already running containers and let the manager node handle the distribution of the containers across the swarm. In case of failure within one of the worker nodes, Docker is capable of detecting this failure and spinning up new containers on the failing node. Docker Swarm also comes with internal load balancing, which is used for this project. That is, the manager node is capable of routing incoming requests to the worker nodes in order to maintain the best performance possible. 
+In order to secure the minitwit application for large amounts of users and operations and ensure a high level of availability the system has been set up using Docker in Swarm mode. The system is operating with a single swarm manager connected to two worker nodes forming a cluster. With Docker Swarm you can simply add more replicas of already running containers and let the manager node handle the distribution of the containers across the swarm. In case of failure within one of the worker nodes, Docker is capable of detecting this failure and spinning up new containers on the failing node. Docker Swarm also comes with internal load balancing, which is used for this project. That is, the manager node is capable of routing incoming requests to the worker nodes in order to maintain the best performance possible. 
+
+Another benefit of Docker Swarm is overlay network and service discovery features that are enabled when using it as an orchestration tool. All containers launched by the manager are added with its own unique DNS name such that we can access and investigate separate containers with ease.
