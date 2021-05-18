@@ -30,7 +30,7 @@ During the course we had to rewrite both the user facing app - `minitwit` and th
 The deployment diagram will give a more comprehensive static view and understanding of the dynamic run time components, nodes and processes in production.
 
 ![deployment diagram](https://i.imgur.com/t8Rc0QO.png)
-![deployment diagram](./../../images/deplyment.png)
+![deployment diagram](./../../images/deployment.png)
 
 - `<<cloud environment>>` is the environment in which all the processes are deployed, in our case it is Digital Ocean but it can be any other cloud provider.
   - `<<ingress>>` in this context is meant indicate the means of accessing the deployed processes, the Floating IP service from Digital Ocean provides a static a ipv4 address we can assing to different Droplets (Virtual Machines).
