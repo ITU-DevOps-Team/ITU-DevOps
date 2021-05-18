@@ -59,7 +59,6 @@ We chose Docker Swarm as the cluster orchestration technology because
 
 - As Swarm is a Docker product, it uses the standard Docker API and networking. Since we were already virtualizing our production environment using Docker and Docker Compose, the transition to Swarm was relatively painless.
 - It has a lightweight installing and is simple to deploy as Swarm mode is already included in the Docker engine.
-- *Maybe more*
 
 ### Technologies and subsystems
 
@@ -144,7 +143,7 @@ On the lowest level, our Go applications depend on the following libraries:
 
 We use the static analysis service SonaryQube for automatic code review. After removing unnecessary files and refactoring the system, we received the the following ratings from SonarQube:
 
-<img src="./../../images/code_quality.png"/>
+![code quality](https://i.imgur.com/vHDx0o5.png)
 
 This indicates that our system is relatively bug-free. 
 
