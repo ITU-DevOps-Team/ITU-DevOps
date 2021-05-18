@@ -9,6 +9,9 @@ The core of the Minitwit application is written in Go. It is split into a fronte
 The high level view of the architecture can be provided by the context diagrams for both `minitwit` and `minitwit-api`.
 
 ![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
+![minitwit-api context diagram](../../images/module-minitwit-api.png)
+![minitwit-api context diagram](../../report/images/module-minitwit-api.png)
+![minitwit-api context diagram](./report/images/module-minitwit-api.png)
 
 ## Dependencies
 
