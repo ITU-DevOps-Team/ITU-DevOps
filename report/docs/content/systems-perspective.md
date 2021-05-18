@@ -7,8 +7,11 @@ The core of the Minitwit application is written in Go. It is split into a fronte
 ## Architecture
 
 During the course we had to rewrite both the user facing app - `minitwit` and the one used for the simulator - `minitwit-api`. The high level architecture can be provided by context diagrams.
-
+<!---
 ![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
+-->
+<img src="./../../images/module-minitwit.png"/>
+
 
 `minitwit` has several components that can be divided logically and this is how we did it. 
 
@@ -18,7 +21,10 @@ During the course we had to rewrite both the user facing app - `minitwit` and th
 - `helpers` has functions that format or sanitize data related to database procedures.
 - `models` has mapping models of the database schemas to Go structures.
 
+<!---
 ![minitwit-api context diagram](https://i.imgur.com/ZFkpbkK.png)
+-->
+<img src="./../../images/module-minitwit-api.png"/>
 
 `minitwit-api` is more straightforward than `minitwit` since it does not bother with generating html docs to send back to the user agent. 
 
@@ -29,8 +35,10 @@ During the course we had to rewrite both the user facing app - `minitwit` and th
 
 The deployment diagram will give a more comprehensive static view and understanding of the dynamic run time components, nodes and processes in production.
 
+<!--
 ![deployment diagram](https://i.imgur.com/t8Rc0QO.png)
-![deployment diagram](./../../images/deployment.png)
+-->
+<img src="./../../images/deployment.png"/>
 
 - `<<cloud environment>>` is the environment in which all the processes are deployed, in our case it is Digital Ocean but it can be any other cloud provider.
   - `<<ingress>>` in this context is meant indicate the means of accessing the deployed processes, the Floating IP service from Digital Ocean provides a static a ipv4 address we can assing to different Droplets (Virtual Machines).
