@@ -4,6 +4,47 @@
 
 The core of the Minitwit application is written in Go. It is split into a frontend system that responds to HTTP requests coming in on destination port 8080 and a backend API that responds to HTTP requests received on port 8081. The frontend system responds to client GET requests with properly formatted HTML responses and is what users would interact with when they visit our website. The backend system responds only with raw JSON and is what the simulator interacts with. The two systems share a PostgreSQL database that stores user information, user following relationships, messages and the 'latest' value. The systems interface with the database through the ORM library GORM instead of through raw SQL queries. The systems are instrumented with Prometheus metrics which allows us to monitor them using Grafana. 
 
+## Architecture
+
+During the course we had to rewrite both the user facing app - `minitwit` and the one used for the simulator - `minitwit-api`. The high level architecture can be provided by context diagrams.
+
+![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
+
+`minitwit` has several components that can be divided logically and this is how we did it. 
+
+- `main` employs a chain of responsibility pattern to perform some middleware logic such as authentication and routing incoming requests to the appropriate `handlers`.
+- `handlers` perform some kind of logic by calling database/sql related procedures from `repositories` then generate an html doc based on the `templates`.
+- `repositories` contain database related procedures that read or mutate data, `repositories` may aswell call certain `helper` functions to format or sanitize data and `models` that contain the mapping models of database schemas to Go structures.
+- `helpers` has functions that format or sanitize data related to database procedures.
+- `models` has mapping models of the database schemas to Go structures.
+
+![minitwit-api context diagram](https://i.imgur.com/ZFkpbkK.png)
+
+`minitwit-api` is more straightforward than `minitwit` since it does not bother with generating html docs to send back to the user agent.
+
+- `main` similarly to `minitwit`, the `main` functions authenticates requests and updates the latest value via middleware and then routes request to the necesarry handler functions isolated in `handlers` component.
+- `handlers` perform some kind of logic by calling database/sql related procedures from `repositories`, may use models to map database data to Go structures.
+- `repositories` contains database related procedures that read or mutate data.
+- `models` contains mapping models of the database schemas to Go structures.
+
+The deployment diagram will give a more comprehensive static view and understanding of the dynamic run time components, nodes and processes in production.
+
+![deployment diagram](https://i.imgur.com/t8Rc0QO.png)
+
+- `<<cloud environment>>` is the environment in which all the processes are deployed, in our case it is Digital Ocean but it can be any other cloud provider.
+  - `<<ingress>>` in this context is meant indicate the means of accessing the deployed processes, the Floating IP service from Digital Ocean provides a static a ipv4 address we can assing to different Droplets (Virtual Machines).
+  - `<<database cluster>>` is a Digital Ocean service which provides a managed database cluster, the database engine picked is Postgresql.
+- `<<orchestration>>` is the mechanism used to ensure that our services can be replicated and are highly available, for this we used Docker Swarm. Consider the following subpoints to be in the context of Docker/Docker Swarm.
+  - `<<device>>` is the host which our services are running on. For this we used multiple Digital Ocean Droplets that joined a single Docker Swarm.
+  - `<<environment>>` is the execution environment. All our services are running in a containerized form using the Docker Engine Container Runtime.
+  - `<<ingress>>` in this context indicates the component responsible for routing of requests to the required service. This mapping is done using the Routing Mesh.
+  - `<<service>>` is meant to indicate both the `service` (the desired state of a process) and the `task` (a running instance of a process). And basically represents a running Docker container.
+  - `<<stack>>` is the collection of services that are deployed using `.yaml` configuration files. The clustering is done by scope so we have a monitoring stack and a logging stack.
+  - `<<configuration>>` is the `.yaml` file used to deploy an application stack to Docker Swarm. Initially these were docker-compose files used in development. Can be viewed in repo at './deploy/docker-swarm'.
+  - `<<volume>>` is a mechanism for persisting data used by the services.
+- `<<container image registry>>` is a platform facilitating storage and distribution of Docker Images via image repositories.
+  - `<<repository>>` is the particular repository used to store and distribute images used in delpoyment.
+
 ## Dependencies
 
 ### Production environment
