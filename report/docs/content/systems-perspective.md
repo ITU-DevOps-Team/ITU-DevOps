@@ -27,6 +27,7 @@ During the course we had to rewrite both the user facing app - `minitwit` and th
 - `repositories` contains database related procedures that read or mutate data.
 - `models` contains mapping models of the database schemas to Go structures.
 
+![deployment diagram](https://i.imgur.com/t8Rc0QO.png)
 ## Dependencies
 
 ### Production environment
