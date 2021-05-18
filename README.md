@@ -9,7 +9,6 @@ Course repository
 - Go (1.15)
 - Docker
 - Docker-compose
-- Sqlite3
 
 ## Installing the depencies
 
