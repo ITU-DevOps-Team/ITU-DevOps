@@ -22,8 +22,8 @@ jobs:
           sources: >
             report/docs/front/front-page.md
             report/docs/content/systems-perspective.md 
-            report/docs/content/process-prespective.md
-            report/docs/content/lessons-learned-prespective.md
+            report/docs/content/process-perspective.md
+            report/docs/content/lessons-learned-perspective.md
             report/docs/*
       - name: upload document
         uses: actions/upload-artifact@v2
