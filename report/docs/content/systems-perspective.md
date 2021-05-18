@@ -35,11 +35,15 @@ The deployment diagram will give a more comprehensive static view and understand
   - `<<ingress>>` in this context is meant indicate the means of accessing the deployed processes, the Floating IP service from Digital Ocean provides a static a ipv4 address we can assing to different Droplets (Virtual Machines).
   - `<<database cluster>>` is a Digital Ocean service which provides a managed database cluster, the database engine picked is Postgresql.
 - `<<orchestration>>` is the mechanism used to ensure that our services can be replicated and are highly available, for this we used Docker Swarm. Consider the following subpoints to be in the context of Docker/Docker Swarm.
- - `<<device>>` is the host which our services are running on. For this we used multiple Digital Ocean Droplets that joined a single Docker Swarm.
- - `<<environment>>` is the execution environment. All our services are running in a containerized form
-
-- `<<container image registry>>`
-  - `<<repository>>`
+  - `<<device>>` is the host which our services are running on. For this we used multiple Digital Ocean Droplets that joined a single Docker Swarm.
+  - `<<environment>>` is the execution environment. All our services are running in a containerized form using the Docker Engine Container Runtime.
+  - `<<ingress>>` in this context indicates the component responsible for routing of requests to the required service. This mapping is done using the Routing Mesh.
+  - `<<service>>` is meant to indicate both the `service` (the desired state of a process) and the `task` (a running instance of a process). And basically represents a running Docker container.
+  - `<<stack>>` is the collection of services that are deployed using `.yaml` configuration files. The clustering is done by scope so we have a monitoring stack and a logging stack.
+  - `<<configuration>>` is the `.yaml` file used to deploy an application stack to Docker Swarm. Initially these were docker-compose files used in development. Can be viewed in repo at './deploy/docker-swarm'.
+  - `<<volume>>` is a mechanism for persisting data used by the services.
+- `<<container image registry>>` is a platform facilitating storage and distribution of Docker Images via image repositories.
+  - `<<repository>>` is the particular repository used to store and distribute images used in delpoyment.
 
 ## Dependencies
 
