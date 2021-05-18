@@ -144,7 +144,7 @@ On the lowest level, our Go applications depend on the following libraries:
 
 We use the static analysis service SonaryQube for automatic code review. After removing unnecessary files and refactoring the system, we received the the following ratings from SonarQube:
 
-<img src="./../../images/code_quality.png"/>
+![code quality](https://i.imgur.com/vHDx0o5.png)
 
 This indicates that our system is relatively bug-free. 
 
