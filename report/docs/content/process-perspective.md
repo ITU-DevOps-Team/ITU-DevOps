@@ -24,9 +24,6 @@ As the project evolved, we ended up with 5 workflows:
 - `format` - consists of `generate-report`, a job that generates a pdf report from the markdown files, uploads the pdf as an artefact and then commits and pushes the pdf report to 'report/build'. The workflow gets triggered on push to development (default) branch or branches matching the 'docs/*' pattern.
 - `sonarcloud` - enabled by installing the `SonarCloud` Github App. Performs linting and checks for bugs, vulnerabilities, code smells and security hotspots. The cicd chain get triggered on pull requests to any branch.
 
-- Organization of your repositor(ies).
-  - That is, either the structure of of mono-repository or organization of artifacts across repositories.
-  - In essence, it has to be be clear what is stored where and why.
 - Applied branching strategy.
 
 A feature based branching strategy has been used for this project, that is anytime a team member desires to add a new feature, a new branch with the name of that feature is created. Once the changes has been implemented a pull-request is made and reviewed by another team member before it is merged with the development branch, which functions as the main branch. 
@@ -57,7 +54,6 @@ Based on these metrics we monitor the following from Grafana:
 
 The goal for the project was to implement and utilize the ELK stack for analyzing and aggregating logs on Kibana, but there were many challenges in making the stack work with Docker Swarm. For the final release of this project, the ELK stack has not been fully implemented, hence there are no logs collected and available through Kibana nor Elasticsearch. Contrarily the internal logging library of Golang is being used to some extend. HTTP responses and errors are being logged locally, but not collected by ELK stack, due to our challenges with Docker Swarm. The ELK stack is implemented using Filebeat to collect and ship log files to Elasticsearch without the L in ELK. That is, Logstash has not been included in the logging stack for this application. Kibana is supposed to fetch logging data from Elasticsearch, but when the application switched to Docker Swarm, Elasticsearch was not receiving any logs. Although the stack is not fully functional in the final application, it worked properly before transforming to a Docker Swarm cluster.
 
-- Brief results of the security assessment.
 - Applied strategy for scaling and load balancing.
 
 To secure the minitwit application for large amounts of users and operations and ensure a high level of availability, the system has been set up using Docker in Swarm mode. The system is operating with a single swarm manager connected to two worker nodes forming a cluster. With Docker Swarm, you can add more replicas of already running containers and let the manager node handle the distribution of the containers across the swarm. In case of failure within one of the worker nodes, Docker can detect this failure and spinning up new containers on the failing node. Docker Swarm also comes with internal load balancing, which is used for this project. That is, the manager node is capable of routing incoming requests to the worker nodes in order to maintain the best performance possible.
