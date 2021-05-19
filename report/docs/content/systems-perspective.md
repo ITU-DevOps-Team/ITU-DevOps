@@ -10,10 +10,10 @@ During the course, we had to rewrite both the user facing app - `minitwit` and t
 
 ![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
 
-`minitwit` has several components that can be divided logically and this is how we did it. 
+`minitwit` has several components that can be divided logically, and this is how we did it. 
 
 - `main` employs a chain of responsibility pattern to perform some middleware logic such as authentication and routing incoming requests to the appropriate `handlers`.
-- `handlers` execute CRUD like operations by calling database/sql related procedures from `repositories` then generate an html doc based on the `templates` to respond with.
+- `handlers` execute CRUD-like operations by calling database/sql related procedures from `repositories` then generate an Html doc based on the `templates` to respond with.
 - `repositories` contain database related procedures that read or mutate data, `repositories` may aswell call certain `helper` functions to format or sanitize data and `models` that contain the mapping models of database schemas to Go structures.
 - `helpers` has functions that format or sanitize data related to database procedures.
 - `models` has mapping models of the database schemas to Go structures.
