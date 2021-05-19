@@ -45,6 +45,8 @@ The deployment diagram will give a more comprehensive static view and understand
 - `<<container image registry>>` is a platform facilitating storage and distribution of Docker Images via image repositories.
   - `<<repository>>` is the particular repository used to store and distribute images used in delpoyment.
 
+![connectors and components diagram](https://i.imgur.com/D5PDuKc.png)
+
 ## Dependencies
 
 ### Production environment
