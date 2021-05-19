@@ -20,14 +20,14 @@ During the course, we had to rewrite both the user facing app - `minitwit` and t
 
 ![minitwit-api context diagram](https://i.imgur.com/ZFkpbkK.png)
 
-`minitwit-api` is more straightforward than `minitwit` since it does not bother with generating html docs to send back to the user agent.
+`minitwit-api` is more straightforward than `minitwit` since it does not bother with generating Html docs to send back to the user agent.
 
-- `main` similarly to `minitwit`, authenticates requests and updates the latest value via middleware and then routes request to the necesarry handler functions isolated in the `handlers` component.
-- `handlers` execute CRUD like operations by calling database/sql related procedures from `repositories`, may use models to map database data to Go structures.
+- `main` similarly to `minitwit`, authenticates requests and updates the latest value via middleware and then routes requests to the necesarry handler functions isolated in the `handlers` component.
+- `handlers` execute CRUD-like operations by calling database/SQL related procedures from `repositories`, may use models to map database data to Go structures.
 - `repositories` contains database related procedures that read or mutate data.
 - `models` contains mapping models of the database schemas to Go structures.
 
-The deployment diagram will give a more comprehensive static view and understanding of the dynamic run time components, nodes and processes in production.
+The deployment diagram will give a more comprehensive static view and understanding of the dynamic run time components, nodes, and processes in production.
 
 ![deployment diagram](https://i.imgur.com/t8Rc0QO.png)
 
@@ -52,10 +52,10 @@ The diagram below depicts the major components of the application and how they c
 
 ### Production environment
 
-The production system is deployed to three nodes on DigitalOcean. One node acts as a manager and load balancer and the other two are replicated worker nodes. The nodes are managed with Docker Swarm. The runtime environment of the worker nodes are Docker containers running Ubuntu v. 20.4. DigitalOcean was chosen as the cloud provider for the following reasons:
+The production system is deployed to three nodes on DigitalOcean. One node acts as a manager and load balancer and the other two are replicated worker nodes. The nodes are managed with Docker Swarm. The runtime environment of the worker nodes is Docker containers running Ubuntu v. 20.4. DigitalOcean was chosen as the cloud provider for the following reasons:
 
 - They have a very affordable pricing model, especially for smaller projects such as Minitwit. Additionally, the GitHub student pack offered a 100$ credit.
-- They have a comprehensive set of tutorials and guides and really nice documentation.
+- They have a comprehensive set of tutorials and guides and nice documentation.
 - Their web interface is very intuitive.
 
 We chose Docker Swarm as the cluster orchestration technology because
