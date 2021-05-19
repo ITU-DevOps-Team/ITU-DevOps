@@ -88,7 +88,7 @@ On a high level, the whole system depends on the following technologies:
 
   GORM is our object-relational mapping (ORM) library that we use to abstract our database into objects in Go. We chose GORM because
 
-  - It is a full-featured ORM library for Go with many different different association types.
+  - It is a full-featured ORM library for Go with many different association types.
   - It integrates well with our PostgreSQL database.
   - It has built-in support for Prometheus.
   - It has a rich, extensive documentation which makes bug-hunting less painful.
@@ -105,7 +105,7 @@ On a high level, the whole system depends on the following technologies:
 
   The Go applications are both instrumented with Prometheus metrics, which are then visualized in Grafana. These two technologies were chosen based on the following reasons:
 
-  - The combination of Prometheus and Grafana is an industry standard for monitoring Go applications. Additionally, it is relatively straightforward to connect Prometheus to Grafana.
+  - The combination of Prometheus and Grafana is an industry standard for monitoring Go applications. Additionally, it is relatively straightforward to connect Prometheus to Grafana.<sup>[1](#f1)</sup>
   - Prometheus delivers metrics without creating time lag on performance.
   - They both exist as Docker images in Docker Hub, which makes deployment easy. 
   - Grafana offers very customizable dashboards for visualizing application performance.
@@ -167,3 +167,6 @@ After reviewing all our dependencies, we found the following six different licen
 - BSD-3-Clause License - very permissive license.
 
 Because of the copyleft clause of AGPLv3, we used that as our license.
+
+###References
+<a name="f1">1</a>: https://stackshare.io/prometheus, https://stackshare.io/grafana - Companies like Slack and Uber are using Prometheus and Grafana
