@@ -21,8 +21,8 @@ As the project evolved, we ended up with 5 workflows:
 - `deploy-minitwit` - consists of two jobs `build-minitwit` and `deploy-minitwit`. `build-minitwit` builds the docker images for the minitwit service then pushes them to docker hub. `deploy-minitwit` uses a marketplace action [appleboy/ssh-action](https://github.com/marketplace/actions/ssh-remote-commands) to ssh into the Swarm Manager node, pull the latest image and trigger a service update. The workflow gets triggered on push to the development (default) branch or can be triggered manually on any branch.
 - `deploy-minitwit-api` - consists of two jobs `build-minitwit-api` and `deploy-minitwit-api`. The steps for these jobs are exactly like the ones from above but for the minitwit-api service. The workflow gets triggered on push to the development (default) branch or can be triggered manually on any branch.
 - `ci formatting` - consists of two jobs `format-minitwit` and `format-minitwit-api`. Both of these jobs use a marketplace action (Jerome1337/gofmt-action@v1.0.4)[https://github.com/marketplace/actions/check-code-formatting-using-gofmt] to perform formatting (go fmt) on the root directories and fails on code not meeting the formatting standards. The workflow gets triggered on push and pull request to the development (default) branch.
-- `format` - consists of `generate-report`. This job generates a pdf report from the markdown files, uploads the pdf as an artefact and then commits and pushes the pdf report to 'report/build'. The workflow gets triggered on push to development (default) branch or branches matching the 'docs/*' pattern.
-- `sonarcloud` - enabled by installing the `SonarCloud` Github App. Performs linting and checks for bugs, vulnerabilities, code smells and security hotspots. The CI/CD chain gets triggered on pull requests to any branch.
+- `format` - consists of `generate-report`, a job that generates a pdf report from the markdown files, uploads the pdf as an artefact and then commits and pushes the pdf report to 'report/build'. The workflow gets triggered on push to development (default) branch or branches matching the 'docs/*' pattern.
+- `sonarcloud` - enabled by installing the `SonarCloud` Github App. Performs linting and checks for bugs, vulnerabilities, code smells and security hotspots. The cicd chain get triggered on pull requests to any branch.
 
 - Organization of your repositor(ies).
   - That is, either the structure of of mono-repository or organization of artifacts across repositories.
@@ -38,7 +38,14 @@ Distribution of tasks among the team members has been done through GitHub's issu
 
 - How do you monitor your systems and what precisely do you monitor?
 
-Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 
+Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing these metrics. Specificaly we monitor the following targets:
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
+ - `fsadf`- asdfadsf
 
 - What do you log in your systems and how do you aggregate logs?
 
