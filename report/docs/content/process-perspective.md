@@ -29,7 +29,7 @@ As the project evolved, we ended up with 5 workflows:
   - In essence, it has to be be clear what is stored where and why.
 - Applied branching strategy.
 
-A feature-based branching strategy has been used for this project, that is anytime a team member desires to add a new feature, a new branch with the name of that feature is created. Once the changes have been implemented a pull request is made and reviewed by another team member before it is merged with the development branch, which functions as the main branch.
+A feature based branching strategy has been used for this project, that is anytime a team member desires to add a new feature, a new branch with the name of that feature is created. Once the changes has been implemented a pull-request is made and reviewed by another team member before it is merged with the development branch, which functions as the main branch. 
 
 - Applied development process and tools supporting it
   - For example, how did you use issues, Kanban boards, etc. to organize open tasks
@@ -38,32 +38,20 @@ Distribution of tasks among the team members has been done through GitHub's issu
 
 - How do you monitor your systems and what precisely do you monitor?
 
-Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing these metrics. Specificaly we monitor the following targets:
+Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for the state of metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing them. Specificaly we monitor the following targets:
  - Frontend application:
-   - asdfasdf
- - `minitwit_ui_usertimeline_requests`- asdfadsf
- - `minitwit_ui_personaltimeline_requests`- asdfadsf
- - `minitwit_ui_unfollow_requests`- asdfadsf
- - `minitwit_ui_follow_requests`- asdfadsf
- - `minitwit_ui_addmessage_requests`- asdfadsf
- - `minitwit_ui_homepage_requests`- asdfadsf
- - `minitwit_ui_register_requests`- asdfadsf
- - `minitwit_ui_login_requests`- asdfadsf
- - `minitwit_ui_logout_requests`- asdfadsf
- - `minitwit_ui_total_requests`- asdfadsf
- - `minitwit_ui_register_requests`- asdfadsf
- - `minitwit_api_register_requests`- asdfadsf
- - `minitwit_api_messages_requests`- asdfadsf
- - `minitwit_api_messages_per_user_requests`- asdfadsf
- - `minitwit_api_follow_requests`- asdfadsf
- - `minitwit_api_total_requests`- asdfadsf
- - `minitwit_api_latest_execution_time_in_ns`- asdfadsf
- - `minitwit_api_register_execution_time_in_ns`- asdfadsf
- - `minitwit_api_messages_execution_time_in_ns`- asdfadsf
- - `minitwit_api_messages_per_user_execution_time_in_ns`- asdfadsf
- - `minitwit_api_follow_execution_time_in_ns`- asdfadsf
- - `minitwit_api_authentication_middleware_execution_time_in_ns`- asdfadsf
- - `minitwit_api_latest_middleware_execution_time_in_ns`- asdfadsf
+   - For each endpoint a metric is incremented to monitor the total amount of requests sent.
+   - Additionally the total amount of requests are monitored through the middleware.
+ - API:
+  - Total amount of requests for all and for each endpoint.
+  - Execution time in ns for all endpoints
+
+Based on these metrics we monitor the following from Grafana:
+ - Total number of API requests per minute (by endpoint as well)
+ - Average execution times
+ - Total homepage visits
+ - CPU usage per process in container
+ - Allocated memory per process in container
 
 - What do you log in your systems and how do you aggregate logs?
 
