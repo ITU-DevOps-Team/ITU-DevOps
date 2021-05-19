@@ -38,7 +38,7 @@ Distribution of tasks among the team members has been done through GitHub's issu
 
 - How do you monitor your systems and what precisely do you monitor?
 
-Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for the state of metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing them. Specificaly we monitor the following targets:
+Monitoring is done with Prometheus, where various metrics are defined in the application. Prometheus scrapes the application for the state of metrics once every 5 seconds. Grafana pulls the metrics and visualizes them in the built-in customizable dashboard. Specifically, we monitor the following targets:
  - Frontend application:
    - For each endpoint a metric is incremented to monitor the total amount of requests sent.
    - Additionally the total amount of requests are monitored through the middleware.
