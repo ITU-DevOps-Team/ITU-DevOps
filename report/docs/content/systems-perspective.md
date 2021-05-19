@@ -6,7 +6,7 @@ The core of the Minitwit application is written in Go. It is split into a fronte
 
 ## Architecture
 
-During the course we had to rewrite both the user facing app - `minitwit` and the one used for the simulator - `minitwit-api`. The high level architecture can be provided by context diagrams.
+During the course, we had to rewrite both the user facing app - `minitwit` and the one used for the simulator - `minitwit-api`. The high-level architecture can be provided by context diagrams.
 
 ![minitwit context diagram](https://i.imgur.com/O0GxNJL.png)
 
