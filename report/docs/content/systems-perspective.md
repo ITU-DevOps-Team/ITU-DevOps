@@ -168,5 +168,5 @@ After reviewing all our dependencies, we found the following six different licen
 
 Because of the copyleft clause of AGPLv3, we used that as our license.
 
-##References
+### References
 <a name="f1">1</a>: https://stackshare.io/prometheus, https://stackshare.io/grafana - Companies like Slack and Uber are using Prometheus and Grafana
