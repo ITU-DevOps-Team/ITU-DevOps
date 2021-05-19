@@ -117,6 +117,8 @@ On a high level, the whole system depends on the following technologies:
   - SonarQube is very feature-packed. It has support for identification of duplicated code, unit testing, code complexity, code smells and much more.
   - It integrates well with popular IDEs such as Eclipse and Visual Studio.
 
+<a name="f1">1</a>: https://stackshare.io/prometheus, https://stackshare.io/grafana - Companies like Slack and Uber are using Prometheus and Grafana
+
 ### Go libraries
 
 On the lowest level, our Go applications depend on the following libraries:
@@ -168,5 +170,4 @@ After reviewing all our dependencies, we found the following six different licen
 
 Because of the copyleft clause of AGPLv3, we used that as our license.
 
-## References
-<a name="f1">1</a>: https://stackshare.io/prometheus, https://stackshare.io/grafana - Companies like Slack and Uber are using Prometheus and Grafana
+
