@@ -39,6 +39,8 @@ Distribution of tasks among the team members has been done through GitHub's issu
 - How do you monitor your systems and what precisely do you monitor?
 
 Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing these metrics. Specificaly we monitor the following targets:
+ - Frontend application:
+ - - asdfasdf
  - `minitwit_ui_usertimeline_requests`- asdfadsf
  - `minitwit_ui_personaltimeline_requests`- asdfadsf
  - `minitwit_ui_unfollow_requests`- asdfadsf
