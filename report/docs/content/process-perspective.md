@@ -39,13 +39,29 @@ Distribution of tasks among the team members has been done through GitHub's issu
 - How do you monitor your systems and what precisely do you monitor?
 
 Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 5 seconds. These metrics are pulled by Grafana which has a built-in customizable dashboard for visualizing these metrics. Specificaly we monitor the following targets:
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
- - `fsadf`- asdfadsf
+ - `minitwit_ui_usertimeline_requests`- asdfadsf
+ - `minitwit_ui_personaltimeline_requests`- asdfadsf
+ - `minitwit_ui_unfollow_requests`- asdfadsf
+ - `minitwit_ui_follow_requests`- asdfadsf
+ - `minitwit_ui_addmessage_requests`- asdfadsf
+ - `minitwit_ui_homepage_requests`- asdfadsf
+ - `minitwit_ui_register_requests`- asdfadsf
+ - `minitwit_ui_login_requests`- asdfadsf
+ - `minitwit_ui_logout_requests`- asdfadsf
+ - `minitwit_ui_total_requests`- asdfadsf
+ - `minitwit_ui_register_requests`- asdfadsf
+ - `minitwit_api_register_requests`- asdfadsf
+ - `minitwit_api_messages_requests`- asdfadsf
+ - `minitwit_api_messages_per_user_requests`- asdfadsf
+ - `minitwit_api_follow_requests`- asdfadsf
+ - `minitwit_api_total_requests`- asdfadsf
+ - `minitwit_api_latest_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_register_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_messages_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_messages_per_user_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_follow_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_authentication_middleware_execution_time_in_ns`- asdfadsf
+ - `minitwit_api_latest_middleware_execution_time_in_ns`- asdfadsf
 
 - What do you log in your systems and how do you aggregate logs?
 
