@@ -67,15 +67,19 @@ Another benefit of Docker Swarm is its overlay network and service discovery fea
 Open ports from Nmap scan:
 
 - Port 22 - OpenSSH
+
 Port 22 enables remote access and can be an easy target if only protected by a password. That is why our servers are passwordless and only accessible by having your public key in the authorized_keys.  
 
 - Port 80, 8080, 8081
+
 Ports open for http traffic
 
 - Port 9200 - Elasticsearch REST API
+
 Elasticsearch does not have any authentication, but is still not a security threat as Elasticsearch only accepts connections from local machine.
 
 - Port 31337 (tcpwrapped)
-Not a thread as it means that a full TCP handshake was completed, but the remote host closed the connection without receiving any data.
+
+Not a thread as tcpwrapped means that a full TCP handshake was completed, but the remote host closed the connection without receiving any data.
 
 Passwords are stored and encrypted using Bcrypt. The Bcrypt hashing function was designed in 1999 and yet remains unbroken to date.
