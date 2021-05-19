@@ -74,7 +74,7 @@ On a high level, the whole system depends on the following technologies:
   - Go is a fast, minimalistic and scalable language with an extensive standard library.
   - It has a strong static type system which helps to minimize bugs. This is an advantage over Python, in which the original Minitwit application was written.
   - Concurrency is an integral part of the language and is supported through goroutines and channels.
-  - Programs are constructed from packages which offers clear code separation.
+  - Programs are constructed from packages that offers clear code separation.
 
 - **PostgreSQL**
 
@@ -98,7 +98,7 @@ On a high level, the whole system depends on the following technologies:
   CI/CD is handled with GitHub Actions. Actions was chosen for the following reasons:
 
   - As Actions is a GitHub product, it integrates very well with our GitHub repository.
-  - It is relatively straight-forward to setup compared to other CI/CD solutions. Many common processes ('Actions') have already been implemented by GitHub themselves or other developers.
+  - It is relatively straightforward to set up compared to other CI/CD solutions. Many common processes ('Actions') have already been implemented by GitHub themselves or other developers.
   - It is free to use up to 2000 minutes per month.
 
 - **Prometheus/Grafana**
@@ -114,7 +114,7 @@ On a high level, the whole system depends on the following technologies:
 
   The codebase is statically analyzed by SonarQube. The reasons we went with SonarQube are
 
-  - SonarQube is very feature-packed. It has support for identification of duplicated code, unit testing, code complexity, code smells and much more.
+  - SonarQube is very feature-packed. It has support for the identification of duplicated code, unit testing, code complexity, code smells and much more.
   - It integrates well with popular IDEs such as Eclipse and Visual Studio.
 
 <a name="f1">1</a>: https://stackshare.io/prometheus, https://stackshare.io/grafana - Companies like Slack and Uber are using Prometheus and Grafana
