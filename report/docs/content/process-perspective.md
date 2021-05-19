@@ -77,3 +77,5 @@ Elasticsearch does not have any authentication, but is still not a security thre
 
 - Port 31337 (tcpwrapped)
 Not a thread as it means that a full TCP handshake was completed, but the remote host closed the connection without receiving any data.
+
+Passwords are stored and encrypted using Bcrypt. The Bcrypt hashing function was designed in 1999 and yet remains unbroken to date.
