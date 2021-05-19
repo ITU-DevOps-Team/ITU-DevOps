@@ -61,3 +61,18 @@ The goal for the project was to implement and utilize the ELK stack for analyzin
 To secure the minitwit application for large amounts of users and operations and ensure a high level of availability, the system has been set up using Docker in Swarm mode. The system is operating with a single swarm manager connected to two worker nodes forming a cluster. With Docker Swarm, you can add more replicas of already running containers and let the manager node handle the distribution of the containers across the swarm. In case of failure within one of the worker nodes, Docker can detect this failure and spinning up new containers on the failing node. Docker Swarm also comes with internal load balancing, which is used for this project. That is, the manager node is capable of routing incoming requests to the worker nodes in order to maintain the best performance possible.
 
 Another benefit of Docker Swarm is its overlay network and service discovery features that are enabled when using it as an orchestration tool. All containers launched by the manager are added with their own unique DNS name such that we can access and investigate separate containers with ease.
+
+- Brief result of the security assessment.
+Open ports from Nmap scan:
+
+Port 22 - OpenSSH
+Port 22 enables remote access and can be an easy target if only protected by a password. That is why our servers are passwordless and only accessible by having your public key in the authorized_keys.  
+
+Port 80, 8080, 8081
+Ports open for http traffic
+
+Port 9200 - Elasticsearch REST API
+Elasticsearch does not have any authentication, but is still not a security threat as Elasticsearch only accepts connections from local machine.
+
+Port 31337 (tcpwrapped)
+Not a thread as it means that a full TCP handshake was completed, but the remote host closed the connection without receiving any data.
