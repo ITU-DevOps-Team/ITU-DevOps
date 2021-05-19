@@ -37,6 +37,9 @@ A feature based branching strategy has been used for this project, that is anyti
 Distribution of tasks among the team members has been done through GitHub's issues and a Kanban board. When new tasks came up they were added as issues on GitHub and assigned a team member. These issues were tracked on the Kanban board using a standard layout containing sections for TODO, In Progress, Under Review and Done. By using both Github Projects and Github Issues we have seamless integration between issues and kanban tasks which gives us a better overview of the project status.
 
 - How do you monitor your systems and what precisely do you monitor?
+
+Monitoring is done with Prometheus, where various metrics is defined in the application. Prometheus scapes the application for these metrics once every 
+
 - What do you log in your systems and how do you aggregate logs?
 
 The goal for the project was to implement and utilize the ELK stack for analysing and aggregating logs on Kibana, but there were manu challenges making the stack work with Docker Swarm. For the final release of this project the ELK stack has not been fully implemented, hence there are no logs collected and available through Kibana nor Elasticsearch. Contrarily the internal logging library of Golang is being used to some extend. HTTP responses and errors are being logged locally, but not collected by ELK stack, due to our challenges with Docker Swarm. The ELK stack is implemented in the application using Filebeat to collect and ship logfiles to Elasticsearch without the L in ELK. That is, Logstash has not been included in the logging stack for this application. Kibana is supposed to fetch logging data from Elasticsearch, but when the application switched to Docker Swarm, Elasticsearch was not receiving any logs. Although the stack is not fully functional in the final application, it was working properly before transforming to a Docker Swarm cluster.
