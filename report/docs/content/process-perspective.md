@@ -43,8 +43,8 @@ Monitoring is done with Prometheus, where various metrics is defined in the appl
    - For each endpoint a metric is incremented to monitor the total amount of requests sent.
    - Additionally the total amount of requests are monitored through the middleware.
  - API:
-  - Total amount of requests for all and for each endpoint.
-  - Execution time in ns for all endpoints
+   - Total amount of requests for all and for each endpoint.
+   - Execution time in ns for all endpoints
 
 Based on these metrics we monitor the following from Grafana:
  - Total number of API requests per minute (by endpoint as well)
