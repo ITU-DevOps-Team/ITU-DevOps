@@ -63,6 +63,7 @@ To secure the minitwit application for large amounts of users and operations and
 Another benefit of Docker Swarm is its overlay network and service discovery features that are enabled when using it as an orchestration tool. All containers launched by the manager are added with their own unique DNS name such that we can access and investigate separate containers with ease.
 
 - Brief result of the security assessment.
+
 Open ports from Nmap scan:
 
 Port 22 - OpenSSH
