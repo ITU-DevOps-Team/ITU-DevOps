@@ -14,7 +14,7 @@ Our team is organized as a flat hierarchy where we would debate on issues and ta
 - A complete description of stages and tools included in the CI/CD chains.
   -  That is, including deployment and release of your systems.
 
-The CICD pipelines are implemented with Github Actions. Initially there was just a single workflow which was building the docker images, pushing them to the Docker Hub repository and then running a docker compose files on the host machine while also forcing the new images to be pulled.
+The CICD pipelines are implemented with Github Actions. Initially, there was just a single workflow which was building the docker images, pushing them to the Docker Hub repository and then running a docker compose file on the host machine while also forcing the new images to be pulled.
 
 As the project evolved, we ended up with 5 workflows:
 
