@@ -2,7 +2,7 @@
 
 ## Evolution and refactoring
 
-Over the time that we spent developing this project, we saw the potential in using tools to assist our work. We added static code analysis, benchmarking and error logging. All of these three things had a heavy impact on the evolution of the application. We benchmarked the application both internally and externally to figure out weak points with regards to efficiency and find potential bottlenecks. We also applied logging to detect any mistakes that we could have missed. To ensure that our codebase was bug-free, consistent and understandable we also used the SonarQube static analysis tool.
+Over the time that we spent developing this project, we saw the potential in using tools to assist our work. We added static code analysis, benchmarking and error logging. All of these three things had a heavy impact on the evolution of the application. We benchmarked the application both internally and externally to figure out weak points with regards to efficiency and find potential bottlenecks. To ensure that our codebase was bug-free, consistent and understandable we also used the SonarQube static analysis tool.
 
 All of the elements mentioned here played a big role in the evolution and refactoring of the project. The changes we implemented reflects the results of these tools and had an overall positive impact on how we matured the application.
 
