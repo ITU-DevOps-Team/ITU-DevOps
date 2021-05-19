@@ -34,7 +34,7 @@ A feature based branching strategy has been used for this project, that is anyti
 - Applied development process and tools supporting it
   - For example, how did you use issues, Kanban boards, etc. to organize open tasks
 
-Distribution of tasks among the team members has been done through GitHub's issues and a Kanban board. When new tasks came up they were added as issues on GitHub and assigned a team member. These issues were tracked on the Kanban board using a standard layout containing sections for TODO, In Progress, Under Review and Done. By using both Github Projects and Github Issues we have seamless integration between issues and kanban tasks which gives us a better overview of the project status.
+Distribution of tasks among the team members has been done through GitHub's issues and a Kanban board. When new tasks came up, they were added as issues on GitHub and assigned a team member. These issues were tracked on the Kanban board using a standard layout containing sections for TODO, In Progress, Under Review, and Done. By using both Github Projects and Github Issues, we have seamless integration between issues and kanban tasks, which gives us a better overview of the project status.
 
 - How do you monitor your systems and what precisely do you monitor?
 
